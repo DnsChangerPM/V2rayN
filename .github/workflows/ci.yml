@@ -62,27 +62,33 @@ jobs:
 
       - name: Report analyze infos 1-9
         if: failure()
-        run: sed -n '1,9p' analyze-info.log | sed 's/^/::warning::ALZ1: /'
+        run: |
+          sed -n '1,9p' analyze-info.log | sed 's/^/::warning::ALZ1: /'
 
       - name: Report analyze infos 10-18
         if: failure()
-        run: sed -n '10,18p' analyze-info.log | sed 's/^/::warning::ALZ2: /'
+        run: |
+          sed -n '10,18p' analyze-info.log | sed 's/^/::warning::ALZ2: /'
 
       - name: Report analyze infos 19-27
         if: failure()
-        run: sed -n '19,27p' analyze-info.log | sed 's/^/::warning::ALZ3: /'
+        run: |
+          sed -n '19,27p' analyze-info.log | sed 's/^/::warning::ALZ3: /'
 
       - name: Report analyze infos 28-36
         if: failure()
-        run: sed -n '28,36p' analyze-info.log | sed 's/^/::warning::ALZ4: /'
+        run: |
+          sed -n '28,36p' analyze-info.log | sed 's/^/::warning::ALZ4: /'
 
       - name: Report analyze infos 37-45
         if: failure()
-        run: sed -n '37,45p' analyze-info.log | sed 's/^/::warning::ALZ5: /'
+        run: |
+          sed -n '37,45p' analyze-info.log | sed 's/^/::warning::ALZ5: /'
 
       - name: Report analyze infos 46-54
         if: failure()
-        run: sed -n '46,54p' analyze-info.log | sed 's/^/::warning::ALZ6: /'
+        run: |
+          sed -n '46,54p' analyze-info.log | sed 's/^/::warning::ALZ6: /'
 
       - name: Unit + widget tests
         run: |
