@@ -52,6 +52,10 @@ jobs:
           echo "EW_COUNT=$(wc -l < analyze-ew.log)" | tee -a "$GITHUB_ENV"
           echo "INFO_COUNT=$(wc -l < analyze-info.log)" | tee -a "$GITHUB_ENV"
           tail -2 analyze.log
+          if [ "$code" -ne 0 ]; then
+            echo "::error::flutter analyze exited $code with EW=$(wc -l < analyze-ew.log) INFO=$(wc -l < analyze-info.log) — raw log tail follows"
+            tail -9 analyze.log | sed 's/^/::error::ANL: /'
+          fi
           exit "$code"
 
       - name: Report analyze errors/warnings (1-9)
