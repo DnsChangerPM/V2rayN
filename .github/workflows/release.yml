@@ -122,8 +122,8 @@ jobs:
       - name: Compute the next version
         id: compute
         run: |
-          chmod +x build/tools/next-version.sh
-          ./build/tools/next-version.sh \
+          chmod +x packaging/tools/next-version.sh
+          ./packaging/tools/next-version.sh \
             /tmp/tags.txt \
             "${{ github.event.inputs.bump }}" \
             "${{ github.event.inputs.version }}" \
@@ -213,8 +213,8 @@ jobs:
           WINTUN_URL: ${{ env.WINTUN_URL }}
           WINTUN_SHA256: ${{ env.WINTUN_SHA256 }}
         run: |
-          chmod +x build/tools/fetch-cores.sh
-          ./build/tools/fetch-cores.sh dist/cores
+          chmod +x packaging/tools/fetch-cores.sh
+          ./packaging/tools/fetch-cores.sh dist/cores
 
       - uses: actions/upload-artifact@v4
         with:
@@ -251,7 +251,7 @@ jobs:
 
       - name: Generate the Windows runner
         shell: pwsh
-        run: ./build/tools/New-WindowsRunner.ps1 -Version ${{ needs.prepare.outputs.version }}
+        run: ./packaging/tools/New-WindowsRunner.ps1 -Version ${{ needs.prepare.outputs.version }}
 
       - name: Build
         run: >
@@ -321,7 +321,7 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           & $iscc `
-            "build\installer\setup.iss" `
+            "packaging\installer\setup.iss" `
             "/DMyAppVersion=${{ needs.prepare.outputs.version }}" `
             "/DSourceDir=$(Resolve-Path dist\app)" `
             "/DCoresDir=$(Resolve-Path dist\cores)" `

@@ -75,7 +75,7 @@ windows_custom/          آیکون برنامه (داخل windows/ کپی می�
 .github/workflows/       release.yml و ci.yml
 ```
 
-> پوشه‌ی `windows/` عمداً در گیت نیست؛ با `flutter create` در CI ساخته می‌شود (اسکریپت `build/tools/New-WindowsRunner.ps1`).
+> پوشه‌ی `windows/` عمداً در گیت نیست؛ با `flutter create` در CI ساخته می‌شود (اسکریپت `packaging/tools/New-WindowsRunner.ps1`).
 
 ---
 
@@ -86,7 +86,7 @@ windows_custom/          آیکون برنامه (داخل windows/ کپی می�
 flutter --version        # باید 3.19.6 باشد
 flutter config --enable-windows-desktop
 flutter pub get
-powershell -File build/tools/New-WindowsRunner.ps1 -Version 0.0.0-dev
+powershell -File packaging/tools/New-WindowsRunner.ps1 -Version 0.0.0-dev
 flutter build windows --release --dart-define=APP_VERSION=0.0.0-dev
 ```
 
@@ -96,7 +96,7 @@ flutter build windows --release --dart-define=APP_VERSION=0.0.0-dev
 build/windows/x64/runner/Release/core/{xray.exe,xray-win7.exe,v2ray.exe,v2ray-win7.exe,tun2socks.exe,tun2socks-win7.exe,wintun.dll,geoip.dat,geosite.dat}
 ```
 
-در CI این کار با `build/tools/fetch-cores.sh` انجام می‌شود.
+در CI این کار با `packaging/tools/fetch-cores.sh` انجام می‌شود.
 
 ---
 
