@@ -25,7 +25,7 @@ dependencies:
   # compatibility (no Win10-only APIs), pure-Dart where possible.
   # See docs/windows-compatibility.md "Dependency matrix".
   # ---------------------------------------------------------------------------
-  intl: 0.19.0 # must match flutter_localizations from Flutter 3.19
+  intl: 0.18.1 # must match flutter_localizations from Flutter 3.19.x
   provider: ^6.1.0 # state management (no native code)
   http: ^1.1.0 # subscriptions / update checks (pure Dart)
   path: ^1.8.0 # path joins (pure Dart)
