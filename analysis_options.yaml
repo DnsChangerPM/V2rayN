@@ -1,0 +1,33 @@
+# IranLink lint rules (flutter_lints 3.x + project-specific hardening).
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - windows/**
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # Production-grade: these must never slip into a release.
+    missing_required_param: error
+    missing_return: error
+    unused_import: error
+    unused_element: error
+    dead_code: error
+    depend_on_referenced_packages: error
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_print
+    - cancel_subscriptions
+    - close_sinks
+    - no_logic_in_create_state
+    - prefer_final_fields
+    - prefer_final_locals
+    - prefer_single_quotes
+    - require_trailing_commas
+    - unawaited_futures
+    - use_string_buffers

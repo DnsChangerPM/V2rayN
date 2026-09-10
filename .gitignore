@@ -1,0 +1,56 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+.pub-cache/
+.pub/
+pubspec.lock
+
+# Windows build outputs
+windows/flutter/ephemeral/
+windows/flutter/generated_plugin_registrant.*
+*.exe
+*.dll
+*.pdb
+*.exp
+*.lib
+*.ilk
+*.idb
+
+# Release artifacts
+dist/
+artifacts/
+*.zip
+!assets/**/*.zip
+SHA256SUMS.txt
+
+# Downloaded core (populated by scripts/download_xray.py, never committed)
+core-bin/
+third_party/xray/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Local dev / secrets — NEVER commit
+.env
+*.pfx
+*.key
+*.pem
+secrets/
+playground/
+
+# Logs
+*.log
+logs/
+
+# Python bytecode (helper scripts)
+__pycache__/
+*.py[cod]
