@@ -64,13 +64,26 @@ jobs:
       - name: Dependencies
         run: flutter pub get
 
-      - name: Generate the Windows runner (debug)
+      - name: Diagnose + generate the Windows runner
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Continue'
-          & ./build/tools/New-WindowsRunner.ps1 -Version 0.0.0-ci 2>&1 |
-            Tee-Object -FilePath ci-runner.log
-          "RUNNER_EXIT=$LASTEXITCODE" | Out-File -Append -Encoding utf8 ci-runner.log
+          $log = 'ci-runner.log'
+          "=== execution policy ===" | Out-File -Append -Encoding utf8 $log
+          Get-ExecutionPolicy -List | Out-File -Append -Encoding utf8 $log
+          "=== script file ===" | Out-File -Append -Encoding utf8 $log
+          "exists: $(Test-Path ./build/tools/New-WindowsRunner.ps1)" | Out-File -Append -Encoding utf8 $log
+          "pwd: $(Get-Location)" | Out-File -Append -Encoding utf8 $log
+          "=== flutter doctor ===" | Out-File -Append -Encoding utf8 $log
+          (& flutter doctor 2>&1) | Out-File -Append -Encoding utf8 $log
+          "=== inline flutter create ===" | Out-File -Append -Encoding utf8 $log
+          (& flutter create --platforms=windows --project-name radin --org com.radin --no-pub . 2>&1) | Out-File -Append -Encoding utf8 $log
+          "exit=$LASTEXITCODE" | Out-File -Append -Encoding utf8 $log
+          "=== windows dir ===" | Out-File -Append -Encoding utf8 $log
+          (Get-ChildItem -Recurse windows -ErrorAction SilentlyContinue | Select-Object -First 40 | ForEach-Object { $_.FullName }) | Out-File -Append -Encoding utf8 $log
+          "=== try the script directly ===" | Out-File -Append -Encoding utf8 $log
+          (& powershell -NoProfile -ExecutionPolicy Bypass -File ./build/tools/New-WindowsRunner.ps1 -Version 0.0.0-ci 2>&1) | Out-File -Append -Encoding utf8 $log
+          "script_exit=$LASTEXITCODE" | Out-File -Append -Encoding utf8 $log
 
       - name: Build (debug)
         shell: pwsh
