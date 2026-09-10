@@ -35,19 +35,16 @@ jobs:
           echo "ANALYZE_EXIT=$?" >> ci-analyze.log
           flutter test --reporter expanded > ci-test.log 2>&1
           echo "TEST_EXIT=$?" >> ci-test.log
+          ls -la ci-analyze.log ci-test.log >> ci-analyze.log
           set -e
 
       - name: Publish debug logs
         if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p ci-logs
-          cp ci-analyze.log ci-test.log ci-logs/ 2>/dev/null || true
-          git config user.name "ci-bot"
-          git config user.email "ci-bot@users.noreply.github.com"
-          git add ci-logs
-          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
-          git commit -m "ci: debug logs [skip ci]"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+          { echo "### analyze"; tail -c 30000 ci-analyze.log; echo; echo "### test"; tail -c 20000 ci-test.log; } > ci-out.txt
+          gh api -X POST "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments" -F body=@ci-out.txt --jq .html_url
 
   build-windows:
     name: Build Windows (MSVC + Win32 plugin)
@@ -88,12 +85,13 @@ jobs:
 
       - name: Publish debug logs
         if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path ci-logs | Out-Null
-          Copy-Item ci-runner.log, ci-build.log ci-logs -ErrorAction SilentlyContinue
-          git config user.name "ci-bot"
-          git config user.email "ci-bot@users.noreply.github.com"
-          git add ci-logs
-          git commit -m "ci: debug logs (windows) [skip ci]" -ErrorAction SilentlyContinue
-          git push origin HEAD:${{ github.ref_name }}
+          $runner = if (Test-Path ci-runner.log) { Get-Content ci-runner.log -Raw } else { '(missing)' }
+          $build = if (Test-Path ci-build.log) { Get-Content ci-build.log -Raw } else { '(missing)' }
+          $out = "### runner`n$runner`n`n### build`n$build"
+          if ($out.Length -gt 60000) { $out = $out.Substring($out.Length - 60000) }
+          Set-Content -Path ci-out.txt -Value $out -Encoding utf8
+          gh api -X POST "repos/$env:GITHUB_REPOSITORY/commits/$env:GITHUB_SHA/comments" -F body=@ci-out.txt --jq .html_url
