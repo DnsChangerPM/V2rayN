@@ -1,0 +1,30 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - "build/**"
+    - "windows/**"
+    - "**/*.g.dart"
+    - "**/*.gen.dart"
+  errors:
+    # The app intentionally prints core process output to stdout.
+    avoid_print: ignore
+    # Windows-only FFI entry points are guarded at runtime.
+    deprecated_member_use: warning
+    # Async gaps in dialogs are intentional in this app.
+    use_build_context_synchronously: ignore
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_empty_else
+    - avoid_redundant_argument_values
+    - avoid_slow_async_io
+    - cancel_subscriptions
+    - close_sinks
+    - prefer_const_constructors
+    - prefer_final_fields
+    - prefer_single_quotes
+    - sort_child_properties_last
+    - unawaited_futures
+    - use_super_parameters

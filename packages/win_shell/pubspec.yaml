@@ -1,0 +1,27 @@
+name: win_shell
+description: >-
+  Windows shell integration for Radin: system tray, close-to-tray, system proxy,
+  child process control, UAC detection and autostart. Implemented as a Dart FFI
+  plugin with a hand written Win32 backend that supports Windows 7 SP1 - Windows 11.
+version: 0.1.0
+publish_to: "none"
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  ffi: ^2.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  plugin:
+    platforms:
+      windows:
+        ffiPlugin: true

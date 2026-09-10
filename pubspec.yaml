@@ -1,0 +1,36 @@
+name: radin
+description: >-
+  Radin - a modern, fast and Iran-optimized V2Ray / Xray client for
+  Windows 7 SP1 through Windows 11, built with Flutter.
+publish_to: "none"
+
+# The real product version lives in `version.txt` and is injected at build time
+# by the release workflow (`--dart-define=APP_VERSION=...`).
+version: 0.0.1+0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Hand written Windows shell integration (tray / system proxy / process control).
+  win_shell:
+    path: packages/win_shell
+
+  ffi: ^2.1.0
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/app_icon_256.png

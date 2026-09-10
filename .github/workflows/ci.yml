@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+env:
+  FLUTTER_VERSION: "3.19.6"
+
+jobs:
+  analyze:
+    name: Analyze & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Format check
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Tests
+        run: flutter test --reporter expanded
+
+      - name: Analyze the win_shell plugin
+        run: |
+          cd packages/win_shell
+          flutter pub get
+          flutter analyze --no-fatal-infos
+
+  build-windows:
+    name: Build Windows (MSVC + Win32 plugin)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Dependencies
+        run: flutter pub get
+
+      - name: Generate the Windows runner
+        shell: pwsh
+        run: ./build/tools/New-WindowsRunner.ps1 -Version 0.0.0-ci
+
+      - name: Build
+        run: >
+          flutter build windows --release
+          --dart-define=APP_VERSION=0.0.0-ci
+          --dart-define=APP_BUILD=${{ github.run_number }}
+          --dart-define=GIT_SHA=${{ github.sha }}
+
+      - name: Collect the build
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/app | Out-Null
+          Copy-Item -Path build/windows/x64/runner/Release/* -Destination dist/app -Recurse -Force
+          Remove-Item -Path dist/app/*.pdb, dist/app/*.exp, dist/app/*.lib -ErrorAction SilentlyContinue
+          Get-ChildItem -Path dist/app | Select-Object Name, Length
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: radin-windows-ci
+          path: dist/app
+          retention-days: 7

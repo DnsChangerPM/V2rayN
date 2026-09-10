@@ -1,0 +1,416 @@
+name: Release
+
+# Builds the Windows installer and publishes it under GitHub Releases.
+#
+# Run it from Actions -> Release -> "Run workflow". The job first prints the
+# version it *suggests* (based on the latest tag) and you can either accept it
+# (leave `version` empty and pick a bump) or type an exact version.
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "How to bump the version (ignored when an explicit version is given)"
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - none
+      version:
+        description: "Explicit version, e.g. 1.4.0 (overrides the bump above)"
+        required: false
+        default: ""
+        type: string
+      prerelease:
+        description: "Pre-release channel"
+        required: true
+        default: none
+        type: choice
+        options:
+          - none
+          - alpha
+          - beta
+          - rc
+      prerelease_number:
+        description: "Pre-release number (used when the channel above is not none)"
+        required: false
+        default: "1"
+        type: string
+      release_notes:
+        description: "Release notes (leave empty to generate them from the commits)"
+        required: false
+        default: ""
+        type: string
+      draft:
+        description: "Create the release as a draft"
+        required: false
+        default: false
+        type: boolean
+      publish:
+        description: "Publish to GitHub Releases"
+        required: false
+        default: true
+        type: boolean
+      dry_run:
+        description: "Only compute the version and print the plan, build nothing"
+        required: false
+        default: false
+        type: boolean
+      build_win7_cores:
+        description: "Compile Windows 7 compatible v2ray / tun2socks with the patched Go SDK"
+        required: false
+        default: true
+        type: boolean
+      xray_version:
+        description: "Xray-core version (tag, or 'latest')"
+        required: false
+        default: latest
+        type: string
+      v2ray_version:
+        description: "V2Ray-core version (tag, or 'latest')"
+        required: false
+        default: latest
+        type: string
+      tun2socks_version:
+        description: "tun2socks version (tag, or 'latest')"
+        required: false
+        default: latest
+        type: string
+      flutter_version:
+        description: "Flutter SDK used for the build"
+        required: false
+        default: "3.19.6"
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  PRODUCT_NAME: Radin
+  APP_EXE: radin.exe
+  WINTUN_URL: https://www.wintun.net/builds/wintun-0.14.1.zip
+  # SHA-256 of wintun-0.14.1.zip. Clear it if the file is replaced upstream.
+  WINTUN_SHA256: 07c256185d6ee3652e09fa55c0b673e2624b565e02c4b9091c79ca7d2f24ef51
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Decide the version
+  # ---------------------------------------------------------------------------
+  prepare:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.compute.outputs.version }}
+      tag: ${{ steps.compute.outputs.tag }}
+      file_version: ${{ steps.compute.outputs.file_version }}
+      is_prerelease: ${{ steps.compute.outputs.is_prerelease }}
+      notes_path: ${{ steps.notes.outputs.path }}
+      build: ${{ steps.gate.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect existing tags
+        run: |
+          git fetch --tags --force
+          git tag --list 'v[0-9]*' > /tmp/tags.txt
+          echo "Existing tags:"; cat /tmp/tags.txt
+
+      - name: Compute the next version
+        id: compute
+        run: |
+          chmod +x build/tools/next-version.sh
+          ./build/tools/next-version.sh \
+            /tmp/tags.txt \
+            "${{ github.event.inputs.bump }}" \
+            "${{ github.event.inputs.version }}" \
+            "${{ github.event.inputs.prerelease }}" \
+            "${{ github.event.inputs.prerelease_number }}"
+
+      - name: Gate (dry run)
+        id: gate
+        run: |
+          if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Release notes
+        id: notes
+        run: |
+          mkdir -p dist
+          path="dist/release-notes.md"
+          if [[ -n "${{ github.event.inputs.release_notes }}" ]]; then
+            printf '%s\n' "${{ github.event.inputs.release_notes }}" > "$path"
+          else
+            previous="$(git tag --list 'v[0-9]*' | sort -V | tail -n 1 || true)"
+            {
+              echo "## Radin ${{ steps.compute.outputs.version }}"
+              echo ""
+              if [[ -n "$previous" ]]; then
+                echo "**Changes since \`$previous\`**"
+                echo ""
+                git log --pretty=format:'- %s (%h)' "$previous"..HEAD
+              else
+                echo "**First release**"
+                echo ""
+                git log --pretty=format:'- %s (%h)' -n 50
+              fi
+              echo ""
+              echo ""
+              echo "### Downloads"
+              echo ""
+              echo "| file | description |"
+              echo "| --- | --- |"
+              echo "| \`Radin-Setup-${{ steps.compute.outputs.version }}.exe\` | Installer for Windows 7 SP1 - Windows 11 (x64) |"
+              echo "| \`Radin-${{ steps.compute.outputs.version }}-portable.zip\` | Portable build, no installation needed |"
+            } > "$path"
+          fi
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+          cat "$path"
+
+      - name: Persist the version in the repository
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          echo "${{ steps.compute.outputs.version }}" > version.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add version.txt
+          if git diff --cached --quiet; then
+            echo "version.txt already up to date"
+          else
+            git commit -m "chore: release ${{ steps.compute.outputs.version }}"
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: radin-release-notes
+          path: dist/release-notes.md
+
+  # ---------------------------------------------------------------------------
+  # 2. Cores
+  # ---------------------------------------------------------------------------
+  cores:
+    name: Cores
+    needs: prepare
+    if: needs.prepare.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch and build the cores
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          XRAY_VERSION: ${{ github.event.inputs.xray_version }}
+          V2RAY_VERSION: ${{ github.event.inputs.v2ray_version }}
+          TUN2SOCKS_VERSION: ${{ github.event.inputs.tun2socks_version }}
+          BUILD_WIN7: ${{ github.event.inputs.build_win7_cores }}
+          WINTUN_URL: ${{ env.WINTUN_URL }}
+          WINTUN_SHA256: ${{ env.WINTUN_SHA256 }}
+        run: |
+          chmod +x build/tools/fetch-cores.sh
+          ./build/tools/fetch-cores.sh dist/cores
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: radin-cores
+          path: dist/cores
+
+  # ---------------------------------------------------------------------------
+  # 3. Flutter application
+  # ---------------------------------------------------------------------------
+  app:
+    name: Flutter app
+    needs: [prepare, cores]
+    if: needs.prepare.outputs.build == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: radin-cores
+          path: dist/cores
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ github.event.inputs.flutter_version }}
+          channel: stable
+          cache: true
+
+      - name: Enable Windows desktop
+        run: flutter config --enable-windows-desktop
+
+      - name: Dependencies
+        run: flutter pub get
+
+      - name: Generate the Windows runner
+        shell: pwsh
+        run: ./build/tools/New-WindowsRunner.ps1 -Version ${{ needs.prepare.outputs.version }}
+
+      - name: Build
+        run: >
+          flutter build windows --release
+          --dart-define=APP_VERSION=${{ needs.prepare.outputs.version }}
+          --dart-define=APP_BUILD=${{ github.run_number }}
+          --dart-define=GIT_SHA=${{ github.sha }}
+
+      - name: Assemble the application folder
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path dist/app | Out-Null
+          Copy-Item -Path build/windows/x64/runner/Release/* -Destination dist/app -Recurse -Force
+          # Debug symbols and import libraries are not needed at runtime.
+          Get-ChildItem -Path dist/app -Include *.pdb,*.exp,*.lib -Recurse -File |
+            Remove-Item -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force -Path dist/app/core | Out-Null
+          Copy-Item -Path dist/cores/* -Destination dist/app/core -Recurse -Force
+          if (-not (Test-Path dist/app/$env:APP_EXE)) { throw "radin.exe is missing" }
+          Get-ChildItem -Path dist/app -Recurse -File |
+            Measure-Object -Property Length -Sum |
+            ForEach-Object { "app folder: {0} files, {1:N1} MB" -f $_.Count, ($_.Sum / 1MB) }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: radin-app
+          path: dist/app
+
+  # ---------------------------------------------------------------------------
+  # 4. Installer + portable archive
+  # ---------------------------------------------------------------------------
+  package:
+    name: Installer
+    needs: [prepare, app]
+    if: needs.prepare.outputs.build == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: radin-app
+          path: dist/app
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { throw "ISCC.exe not found" }
+          & $iscc /?
+
+      - name: Download the Visual C++ redistributable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/redist | Out-Null
+          $ProgressPreference = 'SilentlyContinue'
+          Invoke-WebRequest `
+            -Uri 'https://aka.ms/vs/17/release/vc_redist.x64.exe' `
+            -OutFile 'dist/redist/VC_redist.x64.exe'
+          (Get-Item 'dist/redist/VC_redist.x64.exe').Length
+
+      - name: Build the installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc `
+            "build\installer\setup.iss" `
+            "/DMyAppVersion=${{ needs.prepare.outputs.version }}" `
+            "/DSourceDir=$(Resolve-Path dist\app)" `
+            "/DCoresDir=$(Resolve-Path dist\cores)" `
+            "/DRedistDir=$(Resolve-Path dist\redist)" `
+            "/DOutputDir=$(Resolve-Path dist)"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with $LASTEXITCODE" }
+
+      - name: Build the portable archive
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $version = "${{ needs.prepare.outputs.version }}"
+          $zip = "dist\Radin-$version-portable.zip"
+          if (Test-Path $zip) { Remove-Item $zip -Force }
+          tar.exe -a -c -f $zip -C dist\app .
+          if (-not (Test-Path $zip)) { throw "portable archive was not created" }
+          (Get-Item $zip).Length
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $out = "dist\SHA256SUMS.txt"
+          if (Test-Path $out) { Remove-Item $out -Force }
+          Get-ChildItem -Path dist -File -Include *.exe,*.zip |
+            ForEach-Object {
+              $hash = (Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLower()
+              "$hash  $($_.Name)" | Out-File -Append -Encoding utf8 $out
+            }
+          Get-Content $out
+
+      - name: List the artefacts
+        shell: pwsh
+        run: Get-ChildItem -Path dist -File | Select-Object Name, @{n='MB';e={[math]::Round($_.Length/1MB,2)}}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: radin-dist
+          path: |
+            dist/*.exe
+            dist/*.zip
+            dist/SHA256SUMS.txt
+
+  # ---------------------------------------------------------------------------
+  # 5. GitHub Release
+  # ---------------------------------------------------------------------------
+  release:
+    name: Publish release
+    needs: [prepare, package]
+    if: ${{ needs.prepare.outputs.build == 'true' && github.event.inputs.publish == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: radin-dist
+          path: dist
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: radin-release-notes
+          path: notes
+
+      - name: Create the tag and the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          version="${{ needs.prepare.outputs.version }}"
+          tag="${{ needs.prepare.outputs.tag }}"
+          ls -la dist
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "release $tag already exists - uploading assets"
+            gh release upload "$tag" dist/*.exe dist/*.zip dist/SHA256SUMS.txt --clobber
+          else
+            args=("$tag" --title "Radin $version" --notes-file notes/release-notes.md)
+            if [[ "${{ github.event.inputs.draft }}" == "true" ]]; then args+=(--draft); fi
+            if [[ "${{ needs.prepare.outputs.is_prerelease }}" == "true" ]]; then args+=(--prerelease); fi
+            args+=(--target "${GITHUB_REF#refs/heads/}")
+            gh release create "${args[@]}" dist/*.exe dist/*.zip dist/SHA256SUMS.txt
+          fi
+
+      - name: Summary
+        run: |
+          {
+            echo "### Radin ${{ needs.prepare.outputs.version }}"
+            echo ""
+            echo "Tag: \`${{ needs.prepare.outputs.tag }}\`"
+            echo ""
+            echo '```'
+            ls -lh dist | tail -n +2
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
