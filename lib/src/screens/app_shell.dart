@@ -60,7 +60,7 @@ class AppShell extends StatelessWidget {
                     'assets/images/app_icon_master.png',
                     width: 40,
                     height: 40,
-                    errorBuilder: (_, _, _) => const Icon(
+                    errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.link,
                       size: 40,
                     ),

@@ -150,12 +150,14 @@ class _GroupBar extends StatelessWidget {
     ];
     for (final group in profiles.groups) {
       final label = group.isBuiltin
-          ? context.l10n(switch (group.id) {
-              BuiltinGroups.gaming => 'groupGaming',
-              BuiltinGroups.work => 'groupWork',
-              BuiltinGroups.personal => 'groupPersonal',
-              _ => 'allGroups',
-            })
+          ? context.l10n(
+              switch (group.id) {
+                BuiltinGroups.gaming => 'groupGaming',
+                BuiltinGroups.work => 'groupWork',
+                BuiltinGroups.personal => 'groupPersonal',
+                _ => 'allGroups',
+              },
+            )
           : group.name;
       chips.add(_groupChip(context, group.id, label));
     }
@@ -226,7 +228,7 @@ class _ProfileList extends StatelessWidget {
     return Card(
       child: ListView.separated(
         itemCount: profiles.visible.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
+        separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final profile = profiles.visible[index];
           final selected = profile.id == activeId;

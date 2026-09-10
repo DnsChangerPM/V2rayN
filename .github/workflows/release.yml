@@ -63,12 +63,30 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           python scripts/validate_version.py --version "${{ inputs.version }}"
+
+          # Guard: never overwrite an existing release tag.
+          # git ls-remote --exit-code exit codes:
+          #   0 = matching ref found (tag exists on origin)
+          #   2 = no matching ref (tag is free to use)
+          #   anything else = transport/auth failure while talking to origin
+          # $ErrorActionPreference is temporarily dropped to 'Continue' so the
+          # stderr redirection (2>$null) can never be promoted to a terminating
+          # error by PowerShell, then restored.
           $tag = "v${{ inputs.version }}"
-          git ls-remote --exit-code --tags origin "refs/tags/$tag" 2>$null
-          if ($LASTEXITCODE -eq 0) {
+          $ErrorActionPreference = 'Continue'
+          $null = git ls-remote --exit-code --tags origin "refs/tags/$tag" 2>$null
+          $lsExit = $LASTEXITCODE
+          $ErrorActionPreference = 'Stop'
+
+          if ($lsExit -eq 0) {
             Write-Error "Tag $tag already exists on origin. Refusing to overwrite an existing release."
             exit 1
           }
+          if ($lsExit -ne 2) {
+            Write-Error "git ls-remote failed with exit code $lsExit while checking tag $tag on origin (network or credentials problem)."
+            exit 1
+          }
+
           "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "APP_VERSION=${{ inputs.version }}" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 

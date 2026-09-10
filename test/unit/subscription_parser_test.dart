@@ -58,7 +58,7 @@ void main() {
 
   test('oversize content throws', () {
     expect(
-        () => parseSubscriptionContent('${'x' * (6 * 1024 * 1024)}',
+        () => parseSubscriptionContent('x' * (6 * 1024 * 1024),
             subscriptionId: 's',),
         throwsA(isA<SubscriptionTooLargeException>()),);
   });

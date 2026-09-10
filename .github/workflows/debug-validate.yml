@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Repro (run original validate script verbatim)
+      - name: Repro A (original script, tag missing)
         shell: pwsh
         run: |
           @'
@@ -36,14 +36,36 @@ jobs:
           }
           "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "APP_VERSION=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          '@ | Set-Content -Path orig-validate.ps1 -Encoding utf8
+          '@ | Set-Content -Path repro-a.ps1 -Encoding utf8
 
-          $captured = & 'C:\Program Files\PowerShell\7\pwsh.exe' -NoProfile -command ". './orig-validate.ps1'" *>&1 | ForEach-Object { "$_" }
-          $inner = $LASTEXITCODE
-          "::error::REPRO-EXIT=$inner"
+          $captured = & 'C:\Program Files\PowerShell\7\pwsh.exe' -NoProfile -command ". './repro-a.ps1'" *>&1 | ForEach-Object { "$_" }
+          "::error::REPRO-A-EXIT=$($LASTEXITCODE)"
           $i = 0
           foreach ($line in $captured) {
-            if ($i -lt 8) { "::error::REPRO-OUT[$i]= $line"; $i++ }
+            if ($i -lt 8) { "::error::REPRO-A-OUT[$i]= $line"; $i++ }
+          }
+
+      - name: Repro B (original script, ref exists -> guard must fire)
+        shell: pwsh
+        run: |
+          @'
+          $ErrorActionPreference = 'Stop'
+          python scripts/validate_version.py --version "1.0.0"
+          $tag = "arena/01a08cd2-v2rayn"
+          git ls-remote --exit-code origin "refs/heads/$tag" 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Error "Tag $tag already exists on origin. Refusing to overwrite an existing release."
+            exit 1
+          }
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "APP_VERSION=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          '@ | Set-Content -Path repro-b.ps1 -Encoding utf8
+
+          $captured = & 'C:\Program Files\PowerShell\7\pwsh.exe' -NoProfile -command ". './repro-b.ps1'" *>&1 | ForEach-Object { "$_" }
+          "::error::REPRO-B-EXIT=$($LASTEXITCODE)"
+          $i = 0
+          foreach ($line in $captured) {
+            if ($i -lt 8) { "::error::REPRO-B-OUT[$i]= $line"; $i++ }
           }
 
       - name: Diagnose
@@ -54,30 +76,20 @@ jobs:
           $ErrorActionPreference = 'Stop'
           try {
             git ls-remote --exit-code --tags origin "refs/tags/v1.0.0" 2>$null
-            "::error::LSREM-RESULT=no-throw exit=$LASTEXITCODE ok=$(if($?){'T'}else{'F'})"
+            "::error::LSREM-STOP=no-throw exit=$LASTEXITCODE"
           } catch {
-            "::error::LSREM-RESULT=THREW $($_.Exception.GetType().Name): $($_.Exception.Message -replace \"`n\",' ')"
+            $msg = ($_.Exception.Message -replace '\r?\n', ' / ')
+            "::error::LSREM-STOP=THREW $($_.Exception.GetType().Name) $msg"
           }
           try {
             python -c "import sys; sys.stderr.write('STDERR-BOOM' + chr(10))" 2>$null
             "::error::REDIR-STDERR-STOP=no-throw exit=$LASTEXITCODE"
           } catch {
-            "::error::REDIR-STDERR-STOP=THREW $($_.Exception.GetType().Name): $($_.Exception.Message -replace \"`n\",' ')"
-          }
-          $ErrorActionPreference = 'Continue'
-          $cap = (git ls-remote --exit-code --tags origin "refs/tags/v1.0.0" 2>&1 | ForEach-Object { "$_" }) -join ' | '
-          "::error::CAP-EXIT=$LASTEXITCODE CAP=[$cap]"
-          $stderrProbe = (python -c "import sys; sys.stderr.write('BOOM2' + chr(10))" 2>&1 | ForEach-Object { "$_" }) -join ' | '
-          "::error::PYSTDERR-CAP=[$stderrProbe] exit=$LASTEXITCODE"
-          "::error::GITHUB-ENV-SET=$([bool]$env:GITHUB_ENV)"
-          try {
-            "RELEASE_TAG_DEBUG=v1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-            "::error::OUTFILE-RESULT=ok"
-          } catch {
-            "::error::OUTFILE-RESULT=THREW $($_.Exception.Message -replace \"`n\",' ')"
+            $msg = ($_.Exception.Message -replace '\r?\n', ' / ')
+            "::error::REDIR-STDERR-STOP=THREW $($_.Exception.GetType().Name) $msg"
           }
 
-      - name: Test fixed logic
+      - name: Test fixed logic (replacement for release.yml step)
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
@@ -87,8 +99,19 @@ jobs:
           $null = git ls-remote --exit-code --tags origin "refs/tags/$tag" 2>$null
           $lsExit = $LASTEXITCODE
           $ErrorActionPreference = 'Stop'
-          if ($lsExit -eq 0) { "::error::FIX-RESULT=UNEXPECTED tag exists"; exit 1 }
-          if ($lsExit -ne 2) { "::error::FIX-RESULT=GIT-ERROR exit=$lsExit"; exit 1 }
+          if ($lsExit -eq 0) { "::error::FIX-A=UNEXPECTED-EXISTS"; exit 1 }
+          if ($lsExit -ne 2) { "::error::FIX-A=GIT-ERROR exit=$lsExit"; exit 1 }
           "RELEASE_TAG_FIX=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "APP_VERSION_FIX=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "::error::FIX-RESULT=PASS lsExit=$lsExit"
+          "::error::FIX-A=PASS lsExit=$lsExit"
+
+          $tag2 = "arena/01a08cd2-v2rayn"
+          $ErrorActionPreference = 'Continue'
+          $null = git ls-remote --exit-code origin "refs/heads/$tag2" 2>$null
+          $lsExit2 = $LASTEXITCODE
+          $ErrorActionPreference = 'Stop'
+          if ($lsExit2 -eq 0) {
+            "::error::FIX-B=EXISTING-REF-DETECTED correctly (lsExit=0, guard would fire)"
+          } else {
+            "::error::FIX-B=WRONG lsExit=$lsExit2 (expected 0)"; exit 1
+          }

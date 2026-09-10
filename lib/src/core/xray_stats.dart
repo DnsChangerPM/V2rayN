@@ -123,7 +123,7 @@ class QueryStatsResponse extends pb.GeneratedMessage {
   QueryStatsResponse createEmptyInstance() => create();
 
   @override
-  QueryStatsResponse clone() => QueryStatsResponse()..mergeFromMessage(this);
+  QueryStatsResponse clone() => create()..mergeFromMessage(this);
 
   List<Stat> get stat => $_getList(0);
 }

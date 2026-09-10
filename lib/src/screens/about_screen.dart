@@ -56,7 +56,7 @@ class _AboutScreenState extends State<AboutScreen> {
                 'assets/images/app_icon_master.png',
                 width: 64,
                 height: 64,
-                errorBuilder: (_, _, _) =>
+                errorBuilder: (context, error, stackTrace) =>
                     const Icon(Icons.link, size: 64),
               ),
               const SizedBox(width: 16),

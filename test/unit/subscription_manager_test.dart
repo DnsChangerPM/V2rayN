@@ -47,14 +47,14 @@ void main() {
     await temp.delete(recursive: true);
   });
 
-  ProfileRepository _profiles() => ProfileRepository(
+  ProfileRepository makeProfiles() => ProfileRepository(
         store: JsonStore(
             file: File('${temp.path}/profiles.json'), schemaVersion: 1,),
         newId: () => 'p-${counter++}',
         log: log,
       );
 
-  SubscriptionManager _manager(ProfileRepository profiles, _FakeClient client) =>
+  SubscriptionManager makeManager(ProfileRepository profiles, _FakeClient client) =>
       SubscriptionManager(
         store: JsonStore(
             file: File('${temp.path}/subs.json'), schemaVersion: 1,),
@@ -67,10 +67,10 @@ void main() {
 
   test('refresh imports profiles and persists', () async {
     const link = 'vless://$_uuid@example.com:443#SubNode';
-    final profiles = _profiles();
+    final profiles = makeProfiles();
     await profiles.load();
     final manager =
-        _manager(profiles, _FakeClient(body: base64Encode(utf8.encode('$link\n'))));
+        makeManager(profiles, _FakeClient(body: base64Encode(utf8.encode('$link\n'))));
     await manager.load();
     final sub = await manager.add(
         name: 'test', url: 'https://example.com/sub',);
@@ -83,10 +83,10 @@ void main() {
   });
 
   test('failed refresh records error, never throws', () async {
-    final profiles = _profiles();
+    final profiles = makeProfiles();
     await profiles.load();
     final manager =
-        _manager(profiles, _FakeClient(statusCode: 500, body: 'oops'));
+        makeManager(profiles, _FakeClient(statusCode: 500, body: 'oops'));
     await manager.load();
     final sub = await manager.add(
         name: 'test', url: 'https://example.com/sub',);
@@ -99,9 +99,9 @@ void main() {
   });
 
   test('add rejects invalid url', () async {
-    final profiles = _profiles();
+    final profiles = makeProfiles();
     await profiles.load();
-    final manager = _manager(profiles, _FakeClient());
+    final manager = makeManager(profiles, _FakeClient());
     await manager.load();
     expect(() => manager.add(name: 'x', url: 'not-a-url'),
         throwsArgumentError,);

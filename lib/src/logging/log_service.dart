@@ -107,8 +107,10 @@ class LogService {
     });
   }
 
-  void debug(String tag, String message) => log(LogLevel.debug, tag, message);
-  void info(String tag, String message) => log(LogLevel.info, tag, message);
+  void debug(String tag, String message, {Object? error}) =>
+      log(LogLevel.debug, tag, message, error: error);
+  void info(String tag, String message, {Object? error}) =>
+      log(LogLevel.info, tag, message, error: error);
   void warning(String tag, String message, {Object? error}) =>
       log(LogLevel.warning, tag, message, error: error);
   void error(String tag, String message, {Object? error}) =>
