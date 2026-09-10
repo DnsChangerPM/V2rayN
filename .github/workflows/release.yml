@@ -148,7 +148,7 @@ jobs:
 
       - name: Unit + widget tests
         shell: pwsh
-        run: flutter test --reporter expanded
+        run: flutter test --reporter expanded --timeout 60s
 
       - name: Download Xray core (pinned, digest-verified)
         shell: pwsh

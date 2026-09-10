@@ -102,12 +102,23 @@ jobs:
       - name: Unit + widget tests
         run: |
           set +e
-          flutter test --reporter expanded 2>&1 | tee test.log
+          # --timeout bounds each test in real time; without it a test that
+          # awaits something that never completes hangs the whole job until
+          # the 30-min job timeout instead of failing with a stack trace.
+          flutter test --reporter expanded --timeout 60s 2>&1 | tee test.log
           code=${PIPESTATUS[0]}
           if [ "$code" -ne 0 ]; then
             echo "::error::flutter test failed with exit $code"
             grep -viE "^\s*$" test.log | tail -40 | sed 's/^/::error::TST: /'
             exit "$code"
+          fi
+
+      - name: Report test log (even on hang/timeout)
+        if: always()
+        run: |
+          if [ -f test.log ]; then
+            echo "::warning::test.log tail (last 12 lines):"
+            tail -12 test.log | sed 's/^/::warning::TSTLOG: /'
           fi
 
       - name: Upload diagnostics logs
