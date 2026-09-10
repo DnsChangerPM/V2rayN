@@ -46,11 +46,43 @@ jobs:
           set +e
           flutter analyze --no-fatal-infos 2>&1 | tee analyze.log
           code=${PIPESTATUS[0]}
-          if [ "$code" -ne 0 ]; then
-            echo "::error::flutter analyze failed with exit $code"
-            grep -viE "^\s*$" analyze.log | tail -40 | sed 's/^/::error::ALZ: /'
-            exit "$code"
-          fi
+          grep -E " error • | warning • " analyze.log > analyze-ew.log || true
+          grep -E " info • " analyze.log > analyze-info.log || true
+          echo "ANALYZE_EXIT=$code" | tee -a "$GITHUB_ENV"
+          echo "EW_COUNT=$(wc -l < analyze-ew.log)" | tee -a "$GITHUB_ENV"
+          echo "INFO_COUNT=$(wc -l < analyze-info.log)" | tee -a "$GITHUB_ENV"
+          tail -2 analyze.log
+          exit "$code"
+
+      - name: Report analyze errors/warnings
+        if: failure()
+        run: |
+          echo "::error::EW_COUNT=${{ env.EW_COUNT }} INFO_COUNT=${{ env.INFO_COUNT }}"
+          head -9 analyze-ew.log | sed 's/^/::error::ALZ! /'
+
+      - name: Report analyze infos 1-9
+        if: failure()
+        run: sed -n '1,9p' analyze-info.log | sed 's/^/::warning::ALZ1: /'
+
+      - name: Report analyze infos 10-18
+        if: failure()
+        run: sed -n '10,18p' analyze-info.log | sed 's/^/::warning::ALZ2: /'
+
+      - name: Report analyze infos 19-27
+        if: failure()
+        run: sed -n '19,27p' analyze-info.log | sed 's/^/::warning::ALZ3: /'
+
+      - name: Report analyze infos 28-36
+        if: failure()
+        run: sed -n '28,36p' analyze-info.log | sed 's/^/::warning::ALZ4: /'
+
+      - name: Report analyze infos 37-45
+        if: failure()
+        run: sed -n '37,45p' analyze-info.log | sed 's/^/::warning::ALZ5: /'
+
+      - name: Report analyze infos 46-54
+        if: failure()
+        run: sed -n '46,54p' analyze-info.log | sed 's/^/::warning::ALZ6: /'
 
       - name: Unit + widget tests
         run: |
