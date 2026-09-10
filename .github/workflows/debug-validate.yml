@@ -1,0 +1,92 @@
+# TEMPORARY debug workflow — reproduces the "Validate version input" failure
+# from run 34519856009 on a real windows-2022 runner. Findings are emitted as
+# error annotations so they can be read back through the API.
+name: Debug validate
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    name: Reproduce validate failure (windows-2022)
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 1
+
+      - name: Repro (run original validate script verbatim)
+        shell: pwsh
+        run: |
+          @'
+          $ErrorActionPreference = 'Stop'
+          python scripts/validate_version.py --version "1.0.0"
+          $tag = "v1.0.0"
+          git ls-remote --exit-code --tags origin "refs/tags/$tag" 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Error "Tag $tag already exists on origin. Refusing to overwrite an existing release."
+            exit 1
+          }
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "APP_VERSION=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          '@ | Set-Content -Path orig-validate.ps1 -Encoding utf8
+
+          $captured = & 'C:\Program Files\PowerShell\7\pwsh.exe' -NoProfile -command ". './orig-validate.ps1'" *>&1 | ForEach-Object { "$_" }
+          $inner = $LASTEXITCODE
+          "::error::REPRO-EXIT=$inner"
+          $i = 0
+          foreach ($line in $captured) {
+            if ($i -lt 8) { "::error::REPRO-OUT[$i]= $line"; $i++ }
+          }
+
+      - name: Diagnose
+        shell: pwsh
+        run: |
+          "::error::PSVER=$($PSVersionTable.PSVersion) GIT=$(git --version)"
+          "::error::NCEAP=$PSNativeCommandUseErrorActionPreference"
+          $ErrorActionPreference = 'Stop'
+          try {
+            git ls-remote --exit-code --tags origin "refs/tags/v1.0.0" 2>$null
+            "::error::LSREM-RESULT=no-throw exit=$LASTEXITCODE ok=$(if($?){'T'}else{'F'})"
+          } catch {
+            "::error::LSREM-RESULT=THREW $($_.Exception.GetType().Name): $($_.Exception.Message -replace \"`n\",' ')"
+          }
+          try {
+            python -c "import sys; sys.stderr.write('STDERR-BOOM' + chr(10))" 2>$null
+            "::error::REDIR-STDERR-STOP=no-throw exit=$LASTEXITCODE"
+          } catch {
+            "::error::REDIR-STDERR-STOP=THREW $($_.Exception.GetType().Name): $($_.Exception.Message -replace \"`n\",' ')"
+          }
+          $ErrorActionPreference = 'Continue'
+          $cap = (git ls-remote --exit-code --tags origin "refs/tags/v1.0.0" 2>&1 | ForEach-Object { "$_" }) -join ' | '
+          "::error::CAP-EXIT=$LASTEXITCODE CAP=[$cap]"
+          $stderrProbe = (python -c "import sys; sys.stderr.write('BOOM2' + chr(10))" 2>&1 | ForEach-Object { "$_" }) -join ' | '
+          "::error::PYSTDERR-CAP=[$stderrProbe] exit=$LASTEXITCODE"
+          "::error::GITHUB-ENV-SET=$([bool]$env:GITHUB_ENV)"
+          try {
+            "RELEASE_TAG_DEBUG=v1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+            "::error::OUTFILE-RESULT=ok"
+          } catch {
+            "::error::OUTFILE-RESULT=THREW $($_.Exception.Message -replace \"`n\",' ')"
+          }
+
+      - name: Test fixed logic
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python scripts/validate_version.py --version "1.0.0"
+          $tag = "v1.0.0"
+          $ErrorActionPreference = 'Continue'
+          $null = git ls-remote --exit-code --tags origin "refs/tags/$tag" 2>$null
+          $lsExit = $LASTEXITCODE
+          $ErrorActionPreference = 'Stop'
+          if ($lsExit -eq 0) { "::error::FIX-RESULT=UNEXPECTED tag exists"; exit 1 }
+          if ($lsExit -ne 2) { "::error::FIX-RESULT=GIT-ERROR exit=$lsExit"; exit 1 }
+          "RELEASE_TAG_FIX=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "APP_VERSION_FIX=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "::error::FIX-RESULT=PASS lsExit=$lsExit"
