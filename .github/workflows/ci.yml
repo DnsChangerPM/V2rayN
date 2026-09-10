@@ -118,8 +118,8 @@ jobs:
         if: always()
         run: |
           if [ -f test.log ]; then
-            echo "::warning::test.log tail (last 12 lines):"
-            tail -12 test.log | sed 's/^/::warning::TSTLOG: /'
+            echo "::warning::test.log tail (last 40 lines):"
+            grep -viE "^\s*$" test.log | tail -40 | sed 's/^/::warning::TSTLOG: /'
           fi
 
       - name: Upload diagnostics logs

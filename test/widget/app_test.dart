@@ -9,11 +9,19 @@ import 'package:iranlink/src/state/connection_provider.dart';
 import 'package:iranlink/src/state/service_locator.dart';
 import 'package:provider/provider.dart';
 
-Future<AppServices> _boot() async {
-  final temp = await Directory.systemTemp.createTemp('iranlink-widget-');
-  addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
-  return AppServices.create(
-      pathsOverride: AppPaths.custom(temp, portable: true),);
+/// Boots the real service graph against a temp directory.
+///
+/// ALL real-async work (file IO, service init/dispose) must run inside
+/// `tester.runAsync`: `testWidgets` bodies execute in a FakeAsync zone where
+/// real async I/O never completes — awaiting it directly hangs the test
+/// forever (the per-test timeout cannot fire either).
+Future<AppServices> _boot(WidgetTester tester) async {
+  final temp = (await tester.runAsync<Directory>(
+      () => Directory.systemTemp.createTemp('iranlink-widget-'),))!;
+  addTearDown(() => tester.runAsync(() => temp.delete(recursive: true)));
+  return (await tester.runAsync<AppServices>(() => AppServices.create(
+        pathsOverride: AppPaths.custom(temp, portable: true),
+      )))!;
 }
 
 Future<void> _pump(WidgetTester tester, AppServices services) async {
@@ -30,8 +38,8 @@ ConnectionProvider _connectionOf(WidgetTester tester) {
 void main() {
   testWidgets('boots to dashboard; connect without profile fails friendly',
       (tester) async {
-    final services = await _boot();
-    addTearDown(services.dispose);
+    final services = await _boot(tester);
+    addTearDown(() => tester.runAsync(services.dispose));
     await _pump(tester, services);
 
     expect(find.text('IranLink'), findsWidgets);
@@ -46,8 +54,8 @@ void main() {
   });
 
   testWidgets('navigates between pages', (tester) async {
-    final services = await _boot();
-    addTearDown(services.dispose);
+    final services = await _boot(tester);
+    addTearDown(() => tester.runAsync(services.dispose));
     await _pump(tester, services);
 
     for (final destination in [
@@ -67,8 +75,8 @@ void main() {
   });
 
   testWidgets('settings toggle persists to service layer', (tester) async {
-    final services = await _boot();
-    addTearDown(services.dispose);
+    final services = await _boot(tester);
+    addTearDown(() => tester.runAsync(services.dispose));
     await _pump(tester, services);
 
     await tester.tap(find.text('Settings'));
