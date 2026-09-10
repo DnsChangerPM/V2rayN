@@ -59,7 +59,7 @@ class IranLinkApp extends StatelessWidget {
           create: (_) => LogProvider(log: services.log),
         ),
         ChangeNotifierProvider<NavigationProvider>.value(
-            value: globalNavigation),
+            value: globalNavigation,),
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settingsProvider, _) {

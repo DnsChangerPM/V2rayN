@@ -10,7 +10,7 @@ const _ss = 'ss://YWVzLTI1Ni1nY206cHcxMjM@example.com:8388#Node2';
 void main() {
   test('plain lines', () {
     final parsed = parseSubscriptionContent('$_vless\n$_ss\n',
-        subscriptionId: 'sub1');
+        subscriptionId: 'sub1',);
     expect(parsed.profiles.map((p) => p.name), ['Node1', 'Node2']);
     expect(parsed.errors, isEmpty);
     expect(parsed.profiles.first.subscriptionId, 'sub1');
@@ -25,7 +25,7 @@ void main() {
 
   test('json array of links', () {
     final parsed = parseSubscriptionContent(jsonEncode([_vless, _ss]),
-        subscriptionId: 'sub1');
+        subscriptionId: 'sub1',);
     expect(parsed.profiles.length, 2);
   });
 
@@ -35,15 +35,15 @@ void main() {
       'add': 'h.example',
       'port': '1',
       'id': _uuid,
-    })));
+    }),),);
     final parsed = parseSubscriptionContent(jsonEncode(['vmess://$vmess']),
-        subscriptionId: 'sub1');
+        subscriptionId: 'sub1',);
     expect(parsed.profiles.single.address, 'h.example');
   });
 
   test('bad lines become errors, not crashes', () {
     final parsed = parseSubscriptionContent('$_vless\nnot-a-link\n$_ss\n',
-        subscriptionId: 'sub1');
+        subscriptionId: 'sub1',);
     expect(parsed.profiles.length, 2);
     expect(parsed.errors.length, 1);
     expect(parsed.errors.single.line, 2);
@@ -51,7 +51,7 @@ void main() {
 
   test('comments and blanks skipped', () {
     final parsed = parseSubscriptionContent('# c\n\n$_vless\n',
-        subscriptionId: 'sub1');
+        subscriptionId: 'sub1',);
     expect(parsed.profiles.length, 1);
     expect(parsed.errors, isEmpty);
   });
@@ -59,8 +59,8 @@ void main() {
   test('oversize content throws', () {
     expect(
         () => parseSubscriptionContent('${'x' * (6 * 1024 * 1024)}',
-            subscriptionId: 's'),
-        throwsA(isA<SubscriptionTooLargeException>()));
+            subscriptionId: 's',),
+        throwsA(isA<SubscriptionTooLargeException>()),);
   });
 
   test('empty content parses to empty', () {

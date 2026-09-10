@@ -171,7 +171,7 @@ class _SubscriptionCard extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, SubscriptionProvider provider) async {
+      BuildContext context, SubscriptionProvider provider,) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -217,19 +217,19 @@ class _StatusChip extends StatelessWidget {
         shape: BoxShape.circle,
       ),
       child: Text(label,
-          style: TextStyle(color: color, fontWeight: FontWeight.bold)),
+          style: TextStyle(color: color, fontWeight: FontWeight.bold),),
     );
   }
 }
 
 Future<void> _showEditDialog(
-    BuildContext context, Subscription? existing) async {
+    BuildContext context, Subscription? existing,) async {
   final nameController =
       TextEditingController(text: existing?.name ?? '');
   final urlController = TextEditingController(text: existing?.url ?? '');
   var autoRefresh = existing?.autoRefresh ?? false;
   final intervalController = TextEditingController(
-      text: '${existing?.refreshIntervalMinutes ?? 240}');
+      text: '${existing?.refreshIntervalMinutes ?? 240}',);
   var allowInsecure = existing?.allowInsecure ?? false;
 
   final saved = await showDialog<bool>(
@@ -237,7 +237,7 @@ Future<void> _showEditDialog(
     builder: (context) => StatefulBuilder(
       builder: (context, setState) => AlertDialog(
         title: Text(context.l10n(
-            existing == null ? 'addSubscription' : 'edit')),
+            existing == null ? 'addSubscription' : 'edit',),),
         content: SizedBox(
           width: 460,
           child: Column(
@@ -246,13 +246,13 @@ Future<void> _showEditDialog(
               TextField(
                 controller: nameController,
                 decoration: InputDecoration(
-                    labelText: context.l10n('subscriptionName')),
+                    labelText: context.l10n('subscriptionName'),),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: urlController,
                 decoration: InputDecoration(
-                    labelText: context.l10n('subscriptionUrl')),
+                    labelText: context.l10n('subscriptionUrl'),),
                 textDirection: TextDirection.ltr,
                 maxLines: 2,
               ),
@@ -264,7 +264,7 @@ Future<void> _showEditDialog(
               TextField(
                 controller: intervalController,
                 decoration: InputDecoration(
-                    labelText: context.l10n('refreshInterval')),
+                    labelText: context.l10n('refreshInterval'),),
                 keyboardType: TextInputType.number,
                 textDirection: TextDirection.ltr,
               ),
@@ -314,6 +314,6 @@ Future<void> _showEditDialog(
       autoRefresh: autoRefresh,
       refreshIntervalMinutes: interval.clamp(5, 24 * 60),
       allowInsecure: allowInsecure,
-    ));
+    ),);
   }
 }

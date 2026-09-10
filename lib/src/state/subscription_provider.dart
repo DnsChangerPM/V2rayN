@@ -25,7 +25,7 @@ class SubscriptionProvider extends ChangeNotifier {
     required String url,
     bool autoRefresh = false,
     int refreshIntervalMinutes = 240,
-  }) =>
+  },) =>
       _manager.add(
         name: name,
         url: url,

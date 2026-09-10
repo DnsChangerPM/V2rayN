@@ -56,14 +56,14 @@ Future<void> _run() async {
   // Core binaries must be staged (scripts/stage_bundle.py in CI).
   final coreDir = AppPaths.bundledCoreDir();
   _check(await File('${coreDir.path}/xray.exe').exists(),
-      'primary core staged at ${coreDir.path}');
+      'primary core staged at ${coreDir.path}',);
   _check(await File('${coreDir.path}/win7/xray.exe').exists(),
-      'legacy core staged');
+      'legacy core staged',);
 
   final services = await AppServices.create(pathsOverride: paths);
   try {
     _check(services.core.coreVersion.isNotEmpty,
-        'core version probe (${services.core.coreVersion})');
+        'core version probe (${services.core.coreVersion})',);
 
     // Hermetic test profile: local inbounds + discard outbound target.
     final profile = ProxyProfile(
@@ -75,13 +75,13 @@ Future<void> _run() async {
     );
     final settings = const AppSettings().copyWith(
       inbounds: const InboundSettings(
-          socksPort: 18080, httpPort: 18081, bindAddress: '127.0.0.1'),
+          socksPort: 18080, httpPort: 18081, bindAddress: '127.0.0.1',),
       statsPort: 18082,
     );
 
     await services.core.connect(profile: profile, settings: settings);
     _check(services.core.status.name == 'running',
-        'core running (pid=${services.core.pid})');
+        'core running (pid=${services.core.pid})',);
 
     final handshake = await ConnectivityService(log: services.log)
         .probeSocksHandshake('127.0.0.1', 18080);
@@ -98,11 +98,11 @@ Future<void> _run() async {
           .enable(server: '127.0.0.1:18081');
       final during = services.systemProxy.current();
       _check(during.enabled && during.server == '127.0.0.1:18081',
-          'system proxy enabled');
+          'system proxy enabled',);
       await services.systemProxy.disable();
       final after = services.systemProxy.current();
       _check(after.enabled == before.enabled &&
-          after.server == before.server, 'system proxy restored');
+          after.server == before.server, 'system proxy restored',);
     }
 
     await services.core.disconnect();

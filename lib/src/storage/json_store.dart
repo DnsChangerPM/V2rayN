@@ -17,7 +17,7 @@ class JsonStore {
     required this.file,
     required this.schemaVersion,
     this.migrations = const {},
-  });
+  },);
 
   final File file;
   final int schemaVersion;
@@ -29,7 +29,7 @@ class JsonStore {
       final text = await file.readAsString();
       final decoded = json.decode(text);
       if (decoded is! Map<dynamic, dynamic>) return _quarantine('not-a-json-object');
-      final data = (decoded as Map<dynamic, dynamic>).cast<String, dynamic>();
+      final data = decoded.cast<String, dynamic>();
       return _migrate(data);
     } on FormatException {
       return _quarantine('invalid-json');

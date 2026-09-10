@@ -23,7 +23,7 @@ class ConnectionProvider extends ChangeNotifier
     required SettingsRepository settings,
     required ProfileRepository profiles,
     required LogService log,
-  })  : _core = core,
+  },)  : _core = core,
         _systemProxy = systemProxy,
         _settings = settings,
         _profiles = profiles,
@@ -89,12 +89,12 @@ class ConnectionProvider extends ChangeNotifier
         try {
           await _systemProxy.enable(
               server:
-                  '127.0.0.1:${settings.inbounds.httpPort}');
+                  '127.0.0.1:${settings.inbounds.httpPort}',);
         } on Object catch (e) {
           _log.error('connection', 'System proxy failed', error: e);
           await _core.disconnect();
           _setError(
-              const AppFailure(messageKey: 'proxyErrorApplyFailed'));
+              const AppFailure(messageKey: 'proxyErrorApplyFailed'),);
           return;
         }
       }
@@ -103,7 +103,7 @@ class ConnectionProvider extends ChangeNotifier
     } else {
       _setError(
           _core.lastFailure ??
-              const AppFailure(messageKey: 'coreErrorStartFailed'));
+              const AppFailure(messageKey: 'coreErrorStartFailed'),);
       return;
     }
     notifyListeners();
@@ -135,7 +135,7 @@ class ConnectionProvider extends ChangeNotifier
             _state == ConnectionState.connecting) {
           _setError(
               _core.lastFailure ??
-                  const AppFailure(messageKey: 'coreErrorStartFailed'));
+                  const AppFailure(messageKey: 'coreErrorStartFailed'),);
         }
       case CoreStatus.stopped:
         if (_state != ConnectionState.disconnecting &&

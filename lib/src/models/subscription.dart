@@ -19,7 +19,7 @@ class Subscription {
     this.userAgent = '',
     this.allowInsecure = false,
     this.createdAt,
-  });
+  },);
 
   final String id;
   final String name;
@@ -49,7 +49,7 @@ class Subscription {
     String? userAgent,
     bool? allowInsecure,
     DateTime? createdAt,
-  }) {
+  },) {
     return Subscription(
       id: id ?? this.id,
       name: name ?? this.name,

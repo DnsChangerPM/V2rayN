@@ -53,7 +53,7 @@ int? parseNetstatOwner(String output, int port) {
 
 /// True when TCP [port] on [host] accepts a connection (readiness probe).
 Future<bool> canConnect(String host, int port,
-    {Duration timeout = const Duration(milliseconds: 500)}) async {
+    {Duration timeout = const Duration(milliseconds: 500)},) async {
   try {
     final socket = await Socket.connect(host, port, timeout: timeout);
     socket.destroy();

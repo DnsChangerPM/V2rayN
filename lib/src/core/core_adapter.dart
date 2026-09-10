@@ -25,7 +25,7 @@ class CoreStartRequest {
     required this.executable,
     required this.configPath,
     this.extraArgs = const [],
-  });
+  },);
 
   final String executable;
   final String configPath;

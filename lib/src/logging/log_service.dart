@@ -23,7 +23,7 @@ class LogEntry {
     required this.level,
     required this.tag,
     required this.message,
-  });
+  },);
 
   final DateTime timestamp;
   final LogLevel level;
@@ -41,7 +41,7 @@ class LogService {
     this.maxFileBytes = 2 * 1024 * 1024,
     this.maxRotatedFiles = 5,
     this.minLevel = LogLevel.info,
-  });
+  },);
 
   final Directory logDir;
   final int maxMemoryEntries;

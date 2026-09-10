@@ -43,7 +43,7 @@ void main() {
       });
       final profile = parseShareLink(
           'vmess://${base64Encode(utf8.encode(json))}',
-          newId: _newId)!;
+          newId: _newId,)!;
       expect(profile.protocol, ProxyProtocol.vmess);
       expect(profile.name, 'my server');
       expect(profile.address, 'example.com');
@@ -60,8 +60,8 @@ void main() {
           jsonEncode({'add': 'h', 'port': '1', 'id': 'nope', 'ps': 'x'});
       expect(
           parseShareLink('vmess://${base64Encode(utf8.encode(json))}',
-              newId: _newId),
-          isNull);
+              newId: _newId,),
+          isNull,);
     });
   });
 
@@ -91,7 +91,7 @@ void main() {
 
     test('rejects bad uuid', () {
       expect(parseShareLink('vless://nope@example.com:443', newId: _newId),
-          isNull);
+          isNull,);
     });
   });
 
@@ -110,7 +110,7 @@ void main() {
 
     test('rejects missing password', () {
       expect(parseShareLink('trojan://@example.com:443', newId: _newId),
-          isNull);
+          isNull,);
     });
   });
 
@@ -120,7 +120,7 @@ void main() {
           base64Encode(utf8.encode('aes-256-gcm:secretpw'));
       final profile = parseShareLink(
           'ss://$userInfo@example.com:8388#SS%20Node',
-          newId: _newId)!;
+          newId: _newId,)!;
       expect(profile.protocol, ProxyProtocol.shadowsocks);
       expect(profile.method, 'aes-256-gcm');
       expect(profile.secret, 'secretpw');
@@ -129,7 +129,7 @@ void main() {
 
     test('parses whole-blob form', () {
       final blob = base64Encode(
-          utf8.encode('chacha20-ietf-poly1305:pw@example.com:8388'));
+          utf8.encode('chacha20-ietf-poly1305:pw@example.com:8388'),);
       final profile =
           parseShareLink('ss://$blob', newId: _newId)!;
       expect(profile.method, 'chacha20-ietf-poly1305');
@@ -142,7 +142,7 @@ void main() {
     test('parses socks with auth', () {
       final profile = parseShareLink(
           'socks5://user:pass@127.0.0.1:1080#Local',
-          newId: _newId)!;
+          newId: _newId,)!;
       expect(profile.protocol, ProxyProtocol.socks);
       expect(profile.username, 'user');
       expect(profile.secret, 'pass');
@@ -151,7 +151,7 @@ void main() {
 
     test('parses http proxy', () {
       final profile = parseShareLink(
-          'http://127.0.0.1:8080', newId: _newId)!;
+          'http://127.0.0.1:8080', newId: _newId,)!;
       expect(profile.protocol, ProxyProtocol.http);
       expect(profile.port, 8080);
     });
@@ -166,7 +166,7 @@ void main() {
     test('vless', () {
       final original = parseShareLink(
           'vless://$_uuid@example.com:443?security=tls&sni=example.com#N',
-          newId: _newId)!;
+          newId: _newId,)!;
       final again =
           parseShareLink(encodeShareLink(original), newId: _newId)!;
       expect(again.protocol, original.protocol);

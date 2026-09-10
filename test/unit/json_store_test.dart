@@ -17,13 +17,13 @@ void main() {
 
   test('missing file reads as empty', () async {
     final store = JsonStore(
-        file: File('${temp.path}/x.json'), schemaVersion: 1);
+        file: File('${temp.path}/x.json'), schemaVersion: 1,);
     expect(await store.read(), isEmpty);
   });
 
   test('write then read roundtrip', () async {
     final store = JsonStore(
-        file: File('${temp.path}/x.json'), schemaVersion: 1);
+        file: File('${temp.path}/x.json'), schemaVersion: 1,);
     await store.write({'a': 1, 'b': 'x'});
     expect(await store.read(), {'a': 1, 'b': 'x', 'schemaVersion': 1});
   });
@@ -36,7 +36,7 @@ void main() {
     // Original preserved as .invalid-json-*.
     final siblings = temp.listSync();
     expect(
-        siblings.any((e) => e.path.contains('.invalid-json-')), isTrue);
+        siblings.any((e) => e.path.contains('.invalid-json-')), isTrue,);
   });
 
   test('migration runs when version lags', () async {

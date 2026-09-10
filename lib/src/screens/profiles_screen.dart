@@ -96,7 +96,7 @@ class _Toolbar extends StatelessWidget {
                   ProfileSortKey.speed => 'sortSpeed',
                   ProfileSortKey.lastUsed => 'sortLastUsed',
                   ProfileSortKey.favorite => 'sortFavorite',
-                })),
+                },),),
               ),
           ],
         ),
@@ -146,7 +146,7 @@ class _GroupBar extends StatelessWidget {
     final chips = <Widget>[
       _groupChip(context, BuiltinGroups.all, context.l10n('allGroups')),
       _groupChip(
-          context, BuiltinGroups.favorites, context.l10n('favorites')),
+          context, BuiltinGroups.favorites, context.l10n('favorites'),),
     ];
     for (final group in profiles.groups) {
       final label = group.isBuiltin
@@ -155,7 +155,7 @@ class _GroupBar extends StatelessWidget {
               BuiltinGroups.work => 'groupWork',
               BuiltinGroups.personal => 'groupPersonal',
               _ => 'allGroups',
-            })
+            },)
           : group.name;
       chips.add(_groupChip(context, group.id, label));
     }
@@ -268,24 +268,24 @@ class _ProfileMenu extends StatelessWidget {
           _handleAction(context, profiles, action),
       itemBuilder: (context) => [
         PopupMenuItem(
-            value: 'connect', child: Text(context.l10n('connect'))),
+            value: 'connect', child: Text(context.l10n('connect')),),
         PopupMenuItem(
             value: 'favorite',
             child: Text(context.l10n(
-                profile.isFavorite ? 'unfavorite' : 'favorite'))),
+                profile.isFavorite ? 'unfavorite' : 'favorite',),),),
         PopupMenuItem(value: 'edit', child: Text(context.l10n('edit'))),
         PopupMenuItem(
-            value: 'duplicate', child: Text(context.l10n('duplicate'))),
+            value: 'duplicate', child: Text(context.l10n('duplicate')),),
         PopupMenuItem(
-            value: 'copy', child: Text(context.l10n('copyLink'))),
+            value: 'copy', child: Text(context.l10n('copyLink')),),
         PopupMenuItem(
-            value: 'delete', child: Text(context.l10n('delete'))),
+            value: 'delete', child: Text(context.l10n('delete')),),
       ],
     );
   }
 
   Future<void> _handleAction(BuildContext context,
-      ProfileProvider profiles, String action) async {
+      ProfileProvider profiles, String action,) async {
     switch (action) {
       case 'connect':
         await profiles.selectProfile(profile.id);
@@ -329,7 +329,7 @@ class _ProfileMenu extends StatelessWidget {
   }
 
   void _showEditorDialog(BuildContext context, ProfileProvider profiles,
-      ProxyProfile profile) {
+      ProxyProfile profile,) {
     showDialog(
       context: context,
       builder: (context) => _ProfileEditorDialog(profile: profile),
@@ -379,13 +379,13 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
             TextField(
               controller: _name,
               decoration: InputDecoration(
-                  labelText: context.l10n('profileName')),
+                  labelText: context.l10n('profileName'),),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _address,
               decoration: InputDecoration(
-                  labelText: context.l10n('profileAddress')),
+                  labelText: context.l10n('profileAddress'),),
               textDirection: TextDirection.ltr,
             ),
             const SizedBox(height: 12),
@@ -450,7 +450,7 @@ Future<void> _showImportDialog(BuildContext context) async {
             TextField(
               controller: controller,
               decoration: InputDecoration(
-                  hintText: context.l10n('pasteHere')),
+                  hintText: context.l10n('pasteHere'),),
               maxLines: 8,
               textDirection: TextDirection.ltr,
             ),
@@ -474,13 +474,13 @@ Future<void> _showImportDialog(BuildContext context) async {
                           String.fromCharCodes(bytes);
                     } else {
                       final importResult = await profiles.importQrImage(
-                          bytes);
+                          bytes,);
                       if (context.mounted) {
                         Navigator.pop(context);
                         _showImportSummary(
                             context,
                             imported: importResult.profiles.length,
-                            errors: importResult.errors.length);
+                            errors: importResult.errors.length,);
                       }
                     }
                   },
@@ -518,7 +518,7 @@ Future<void> _showImportDialog(BuildContext context) async {
 }
 
 void _showImportSummary(BuildContext context,
-    {required int imported, required int errors}) {
+    {required int imported, required int errors},) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(

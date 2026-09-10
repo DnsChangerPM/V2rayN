@@ -24,7 +24,7 @@ void main() {
     temp = await Directory.systemTemp.createTemp('profile-repo-test-');
     log = LogService(
         logDir: Directory('${temp.path}/logs'),
-        minLevel: LogLevel.error);
+        minLevel: LogLevel.error,);
   });
 
   tearDown(() async {
@@ -34,7 +34,7 @@ void main() {
 
   ProfileRepository _repo() => ProfileRepository(
         store: JsonStore(
-            file: File('${temp.path}/profiles.json'), schemaVersion: 1),
+            file: File('${temp.path}/profiles.json'), schemaVersion: 1,),
         newId: () => 'gen-${counter++}',
         log: log,
       );

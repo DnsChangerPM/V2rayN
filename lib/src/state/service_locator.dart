@@ -56,7 +56,7 @@ class AppServices {
     required this.selector,
     required this.updates,
     required this.backup,
-  });
+  },);
 
   final AppPaths paths;
   final LogService log;

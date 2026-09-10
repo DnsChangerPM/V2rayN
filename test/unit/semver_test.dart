@@ -23,7 +23,7 @@ void main() {
         ' 1.2.3',
       ]) {
         expect(() => SemVersion.parseStrict(bad), throwsFormatException,
-            reason: bad);
+            reason: bad,);
       }
     });
   });
@@ -38,9 +38,9 @@ void main() {
 
   test('comparison', () {
     expect(
-        const SemVersion(1, 4, 2) < const SemVersion(1, 4, 3), isTrue);
+        const SemVersion(1, 4, 2) < const SemVersion(1, 4, 3), isTrue,);
     expect(
-        const SemVersion(2, 0, 0) > const SemVersion(1, 99, 99), isTrue);
+        const SemVersion(2, 0, 0) > const SemVersion(1, 99, 99), isTrue,);
     expect(const SemVersion(1, 2, 3) == const SemVersion(1, 2, 3), isTrue);
   });
 }

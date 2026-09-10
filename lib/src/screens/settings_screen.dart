@@ -42,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
               ThemeModeSetting.system => 'themeSystem',
               ThemeModeSetting.light => 'themeLight',
               ThemeModeSetting.dark => 'themeDark',
-            }),
+            },),
             onChanged: provider.setTheme,
           ),
           _DropdownRow<LocaleSetting>(
@@ -71,7 +71,7 @@ class SettingsScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                         content:
-                            Text(context.l10n('connectionError'))),
+                            Text(context.l10n('connectionError')),),
                   );
                 }
               }
@@ -105,7 +105,7 @@ class SettingsScreen extends StatelessWidget {
               ProxyMode.socks => 'proxyModeSocks',
               ProxyMode.http => 'proxyModeHttp',
               ProxyMode.tun => 'proxyModeTun',
-            }),
+            },),
             onChanged: provider.setProxyMode,
           ),
           _PortRow(
@@ -113,7 +113,7 @@ class SettingsScreen extends StatelessWidget {
             httpPort: settings.inbounds.httpPort,
             onSaved: (socks, http) => provider.update((s) => s.copyWith(
                 inbounds: s.inbounds
-                    .copyWith(socksPort: socks, httpPort: http))),
+                    .copyWith(socksPort: socks, httpPort: http),),),
           ),
           SectionHeader(title: context.l10n('sectionRouting')),
           _DropdownRow<RoutingMode>(
@@ -125,21 +125,21 @@ class SettingsScreen extends StatelessWidget {
               RoutingMode.direct => 'routingDirect',
               RoutingMode.proxy => 'routingProxy',
               RoutingMode.ruleBased => 'routingRuleBased',
-            }),
+            },),
             onChanged: (mode) => provider.update((s) => s.copyWith(
-                routing: s.routing.copyWith(mode: mode))),
+                routing: s.routing.copyWith(mode: mode),),),
           ),
           SwitchListTile(
             title: Text(context.l10n('bypassLan')),
             value: settings.routing.bypassLan,
             onChanged: (value) => provider.update((s) => s.copyWith(
-                routing: s.routing.copyWith(bypassLan: value))),
+                routing: s.routing.copyWith(bypassLan: value),),),
           ),
           SwitchListTile(
             title: Text(context.l10n('bypassIran')),
             value: settings.routing.bypassIran,
             onChanged: (value) => provider.update((s) => s.copyWith(
-                routing: s.routing.copyWith(bypassIran: value))),
+                routing: s.routing.copyWith(bypassIran: value),),),
           ),
           SectionHeader(title: context.l10n('sectionDns')),
           _DnsRow(provider: provider, settings: settings),
@@ -153,7 +153,7 @@ class SettingsScreen extends StatelessWidget {
               NetworkPreset.balanced => 'presetBalanced',
               NetworkPreset.highLatency => 'presetHighLatency',
               NetworkPreset.unstable => 'presetUnstable',
-            }),
+            },),
             onChanged: provider.applyNetworkPreset,
           ),
           _DropdownRow<IpPreference>(
@@ -164,22 +164,22 @@ class SettingsScreen extends StatelessWidget {
               IpPreference.auto => 'ipAuto',
               IpPreference.preferIpv4 => 'ipPrefer4',
               IpPreference.preferIpv6 => 'ipPrefer6',
-            }),
+            },),
             onChanged: (preference) => provider.update((s) => s.copyWith(
-                tuning: s.tuning.copyWith(ipPreference: preference))),
+                tuning: s.tuning.copyWith(ipPreference: preference),),),
           ),
           SectionHeader(title: context.l10n('sectionCore')),
           SwitchListTile(
             title: Text(context.l10n('preferLegacyCore')),
             value: settings.preferLegacyCore,
             onChanged: (value) => provider.update(
-                (s) => s.copyWith(preferLegacyCore: value)),
+                (s) => s.copyWith(preferLegacyCore: value),),
           ),
           SwitchListTile(
             title: Text(context.l10n('checkUpdates')),
             value: settings.checkUpdatesOnStartup,
             onChanged: (value) => provider.update(
-                (s) => s.copyWith(checkUpdatesOnStartup: value)),
+                (s) => s.copyWith(checkUpdatesOnStartup: value),),
           ),
           SectionHeader(title: context.l10n('sectionBackup')),
           _BackupRow(),
@@ -197,7 +197,7 @@ class _DropdownRow<T> extends StatelessWidget {
     required this.items,
     required this.labelFor,
     required this.onChanged,
-  });
+  },);
 
   final String label;
   final T value;
@@ -235,7 +235,7 @@ class _PortRow extends StatefulWidget {
     required this.socksPort,
     required this.httpPort,
     required this.onSaved,
-  });
+  },);
 
   final int socksPort;
   final int httpPort;
@@ -284,7 +284,7 @@ class _PortRowState extends State<_PortRow> {
             child: TextField(
               controller: _socks,
               decoration: InputDecoration(
-                  labelText: context.l10n('socksPort')),
+                  labelText: context.l10n('socksPort'),),
               keyboardType: TextInputType.number,
               textDirection: TextDirection.ltr,
             ),
@@ -294,7 +294,7 @@ class _PortRowState extends State<_PortRow> {
             child: TextField(
               controller: _http,
               decoration: InputDecoration(
-                  labelText: context.l10n('httpPort')),
+                  labelText: context.l10n('httpPort'),),
               keyboardType: TextInputType.number,
               textDirection: TextDirection.ltr,
             ),
@@ -338,7 +338,7 @@ class _DnsRowState extends State<_DnsRow> {
   void initState() {
     super.initState();
     _servers = TextEditingController(
-        text: widget.settings.dns.servers.join(', '));
+        text: widget.settings.dns.servers.join(', '),);
   }
 
   @override
@@ -357,7 +357,7 @@ class _DnsRowState extends State<_DnsRow> {
               child: TextField(
                 controller: _servers,
                 decoration: InputDecoration(
-                    labelText: context.l10n('dnsServers')),
+                    labelText: context.l10n('dnsServers'),),
                 textDirection: TextDirection.ltr,
               ),
             ),
@@ -371,7 +371,7 @@ class _DnsRowState extends State<_DnsRow> {
                     .toList();
                 if (servers.isEmpty) return;
                 widget.provider.update((s) => s.copyWith(
-                    dns: s.dns.copyWith(servers: servers)));
+                    dns: s.dns.copyWith(servers: servers),),);
               },
               child: Text(context.l10n('save')),
             ),
@@ -381,13 +381,13 @@ class _DnsRowState extends State<_DnsRow> {
           title: Text(context.l10n('useSystemDns')),
           value: widget.settings.dns.useSystemDns,
           onChanged: (value) => widget.provider.update((s) => s.copyWith(
-              dns: s.dns.copyWith(useSystemDns: value))),
+              dns: s.dns.copyWith(useSystemDns: value),),),
         ),
         SwitchListTile(
           title: Text(context.l10n('enableDoh')),
           value: widget.settings.dns.enableDoh,
           onChanged: (value) => widget.provider.update((s) => s.copyWith(
-              dns: s.dns.copyWith(enableDoh: value))),
+              dns: s.dns.copyWith(enableDoh: value),),),
         ),
       ],
     );
@@ -423,7 +423,7 @@ class _BackupRow extends StatelessWidget {
         content: TextField(
           controller: controller,
           decoration: InputDecoration(
-              labelText: context.l10n('backupPassword')),
+              labelText: context.l10n('backupPassword'),),
           obscureText: true,
         ),
         actions: [

@@ -31,7 +31,7 @@ class SettingsRepository {
         _settings = AppSettings.fromJson(data);
       } on Object catch (e) {
         _log.warning(
-            'settings', 'Unreadable settings, using defaults', error: e);
+            'settings', 'Unreadable settings, using defaults', error: e,);
         _settings = const AppSettings();
       }
     }

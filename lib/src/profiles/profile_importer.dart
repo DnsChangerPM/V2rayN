@@ -30,7 +30,7 @@ class ImportResult {
     required this.profiles,
     required this.errors,
     required this.subscriptionUrls,
-  });
+  },);
 
   final List<ProxyProfile> profiles;
   final List<ImportError> errors;
@@ -54,7 +54,7 @@ class ProfileImporter {
     String text, {
     String groupId = '',
     bool persist = true,
-  }) async {
+  },) async {
     final profiles = <ProxyProfile>[];
     final errors = <ImportError>[];
     final subscriptionUrls = <String>[];
@@ -97,9 +97,9 @@ class ProfileImporter {
     }
     _log.info('import',
         'Text import: ${profiles.length} profiles, ${errors.length} errors, '
-        '${subscriptionUrls.length} subscription URLs');
+        '${subscriptionUrls.length} subscription URLs',);
     return ImportResult(
-        profiles: profiles, errors: errors, subscriptionUrls: subscriptionUrls);
+        profiles: profiles, errors: errors, subscriptionUrls: subscriptionUrls,);
   }
 
   /// Decode a QR code from image [bytes] (PNG/JPEG screenshot or file photo)
@@ -108,7 +108,7 @@ class ProfileImporter {
     Uint8List bytes, {
     String groupId = '',
     bool persist = true,
-  }) async {
+  },) async {
     final payload = _decodeQr(bytes);
     if (payload == null || payload.trim().isEmpty) {
       _log.warning('import', 'QR decode produced no payload');
@@ -132,7 +132,7 @@ class ProfileImporter {
     try {
       final decoded = json.decode(text);
       if (decoded is! Map<dynamic, dynamic>) return null;
-      final map = (decoded as Map<dynamic, dynamic>).cast<String, dynamic>();
+      final map = decoded.cast<String, dynamic>();
       final outbounds = map['outbounds'];
       if (outbounds is! List<dynamic> || outbounds.isEmpty) return null;
       return ProxyProfile(

@@ -28,13 +28,13 @@ class ConnectivityService {
     String host,
     int port, {
     Duration timeout = const Duration(seconds: 5),
-  }) async {
+  },) async {
     final stopwatch = Stopwatch()..start();
     try {
       final socket = await Socket.connect(host, port, timeout: timeout);
       socket.destroy();
       return ProbeResult(
-          name: 'tcp', success: true, latencyMs: stopwatch.elapsedMilliseconds);
+          name: 'tcp', success: true, latencyMs: stopwatch.elapsedMilliseconds,);
     } on Object catch (e) {
       _log.debug('probe', 'TCP $host:$port failed: $e');
       return ProbeResult(name: 'tcp', success: false, detail: '$e');
@@ -44,20 +44,20 @@ class ConnectivityService {
   Future<ProbeResult> probeSystemDns(
     String hostname, {
     Duration timeout = const Duration(seconds: 5),
-  }) async {
+  },) async {
     final stopwatch = Stopwatch()..start();
     try {
       final addresses = await InternetAddress.lookup(hostname)
           .timeout(timeout);
       if (addresses.isEmpty) {
         return const ProbeResult(
-            name: 'dns', success: false, detail: 'no records');
+            name: 'dns', success: false, detail: 'no records',);
       }
       return ProbeResult(
           name: 'dns',
           success: true,
           latencyMs: stopwatch.elapsedMilliseconds,
-          detail: addresses.first.address);
+          detail: addresses.first.address,);
     } on Object catch (e) {
       return ProbeResult(name: 'dns', success: false, detail: '$e');
     }
@@ -67,20 +67,20 @@ class ConnectivityService {
     String hostname,
     String dnsServer, {
     Duration timeout = const Duration(seconds: 5),
-  }) async {
+  },) async {
     final stopwatch = Stopwatch()..start();
     try {
       final answers =
           await DnsQuery.queryARecords(hostname, dnsServer, timeout: timeout);
       if (answers.isEmpty) {
         return const ProbeResult(
-            name: 'dns', success: false, detail: 'no A records');
+            name: 'dns', success: false, detail: 'no A records',);
       }
       return ProbeResult(
           name: 'dns',
           success: true,
           latencyMs: stopwatch.elapsedMilliseconds,
-          detail: answers.first);
+          detail: answers.first,);
     } on Object catch (e) {
       return ProbeResult(name: 'dns', success: false, detail: '$e');
     }
@@ -92,7 +92,7 @@ class ConnectivityService {
     String host,
     int port, {
     Duration timeout = const Duration(seconds: 5),
-  }) async {
+  },) async {
     final stopwatch = Stopwatch()..start();
     try {
       final socket = await Socket.connect(host, port, timeout: timeout);
@@ -104,10 +104,10 @@ class ConnectivityService {
           return ProbeResult(
               name: 'socks',
               success: true,
-              latencyMs: stopwatch.elapsedMilliseconds);
+              latencyMs: stopwatch.elapsedMilliseconds,);
         }
         return const ProbeResult(
-            name: 'socks', success: false, detail: 'bad handshake reply');
+            name: 'socks', success: false, detail: 'bad handshake reply',);
       } finally {
         socket.destroy();
       }
@@ -126,7 +126,7 @@ abstract final class DnsQuery {
     String hostname,
     String server, {
     Duration timeout = const Duration(seconds: 5),
-  }) async {
+  },) async {
     final random = Random();
     final txId = random.nextInt(0xFFFF);
     final packet = _buildQuery(txId, hostname);
@@ -190,7 +190,7 @@ abstract final class DnsQuery {
       offset += 10;
       if (type == 1 && rdLength == 4 && offset + 4 <= data.length) {
         results.add(
-            '${data[offset]}.${data[offset + 1]}.${data[offset + 2]}.${data[offset + 3]}');
+            '${data[offset]}.${data[offset + 1]}.${data[offset + 2]}.${data[offset + 3]}',);
       }
       offset += rdLength;
     }
@@ -219,7 +219,7 @@ abstract final class Socks5Client {
     required String targetHost,
     required int targetPort,
     Duration timeout = const Duration(seconds: 8),
-  }) async {
+  },) async {
     final stopwatch = Stopwatch()..start();
     Socket? socket;
     try {
@@ -229,7 +229,7 @@ abstract final class Socks5Client {
       final greeting = await socket.first.timeout(timeout);
       if (greeting.length < 2 || greeting[0] != 0x05 || greeting[1] != 0x00) {
         return const SocksConnectResult(
-            success: false, detail: 'proxy auth required or bad greeting');
+            success: false, detail: 'proxy auth required or bad greeting',);
       }
       final request = BytesBuilder()
         ..add([0x05, 0x01, 0x00, 0x03, targetHost.length])
@@ -240,14 +240,14 @@ abstract final class Socks5Client {
       final reply = await socket.first.timeout(timeout);
       if (reply.length < 2 || reply[0] != 0x05) {
         return const SocksConnectResult(
-            success: false, detail: 'bad connect reply');
+            success: false, detail: 'bad connect reply',);
       }
       if (reply[1] != 0x00) {
         return SocksConnectResult(
-            success: false, detail: 'proxy refused: code=${reply[1]}');
+            success: false, detail: 'proxy refused: code=${reply[1]}',);
       }
       return SocksConnectResult(
-          success: true, latencyMs: stopwatch.elapsedMilliseconds);
+          success: true, latencyMs: stopwatch.elapsedMilliseconds,);
     } on Object catch (e) {
       return SocksConnectResult(success: false, detail: '$e');
     } finally {
@@ -265,7 +265,7 @@ class ProfileProbeResult {
     required this.success,
     this.latencyMs,
     this.detail = '',
-  });
+  },);
 
   final bool success;
   final int? latencyMs;
@@ -280,7 +280,7 @@ class ProfileProbe {
     required LogService log,
     this.targetHost = '8.8.8.8',
     this.targetPort = 53,
-  })  : _adapter = adapter,
+  },)  : _adapter = adapter,
         _builder = builder,
         _executable = executable,
         _log = log;
@@ -298,7 +298,7 @@ class ProfileProbe {
     ProxyProfile profile,
     AppSettings settings, {
     Duration timeout = const Duration(seconds: 15),
-  }) async {
+  },) async {
     CoreProcess? process;
     Directory? sandbox;
     try {
@@ -319,7 +319,7 @@ class ProfileProbe {
       await File(configPath).writeAsString(json.encode(config));
       process = await _adapter
           .start(CoreStartRequest(
-              executable: _executable, configPath: configPath))
+              executable: _executable, configPath: configPath,),)
           .timeout(timeout);
 
       // Wait for the inbound to accept connections.
@@ -336,7 +336,7 @@ class ProfileProbe {
       }
       if (!ready) {
         return const ProfileProbeResult(
-            success: false, detail: 'test core did not start');
+            success: false, detail: 'test core did not start',);
       }
       final check = await Socks5Client.connectThrough(
         proxyHost: '127.0.0.1',
@@ -348,14 +348,14 @@ class ProfileProbe {
       return ProfileProbeResult(
           success: check.success,
           latencyMs: check.latencyMs,
-          detail: check.detail);
+          detail: check.detail,);
     } on Object catch (e) {
       _log.debug('probe', 'Profile probe failed', error: e);
       return ProfileProbeResult(success: false, detail: '$e');
     } finally {
       try {
         await process?.terminateGracefully(
-            timeout: const Duration(seconds: 3));
+            timeout: const Duration(seconds: 3),);
       } on Object {
         // ignore
       }

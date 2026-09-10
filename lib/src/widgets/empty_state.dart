@@ -9,7 +9,7 @@ class EmptyState extends StatelessWidget {
     required this.icon,
     required this.message,
     this.action,
-  });
+  },);
 
   final IconData icon;
   final String message;
@@ -23,7 +23,7 @@ class EmptyState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
-              size: 48, color: theme.colorScheme.onSurfaceVariant),
+              size: 48, color: theme.colorScheme.onSurfaceVariant,),
           const SizedBox(height: 12),
           Text(message, style: theme.textTheme.bodyMedium),
           if (action != null) ...[

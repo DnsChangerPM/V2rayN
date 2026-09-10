@@ -1,7 +1,7 @@
 /// Application shell: sidebar navigation + pages + status bar.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';

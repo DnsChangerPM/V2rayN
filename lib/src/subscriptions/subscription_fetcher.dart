@@ -53,7 +53,7 @@ class SubscriptionFetcher {
     Duration baseBackoff = const Duration(seconds: 1),
     bool allowInsecure = false,
     CancellationToken? cancellation,
-  }) async {
+  },) async {
     final random = Random();
     Object? lastError;
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -66,14 +66,14 @@ class SubscriptionFetcher {
           allowInsecure: allowInsecure,
         );
         _log.info('subscription',
-            'Fetched ${maskUrl(url.toString())} (${body.length} chars)');
+            'Fetched ${maskUrl(url.toString())} (${body.length} chars)',);
         return body;
       } on FetchCancelledException {
         rethrow;
       } on Object catch (e) {
         lastError = e;
         _log.warning('subscription',
-            'Fetch attempt $attempt/$maxAttempts failed', error: e);
+            'Fetch attempt $attempt/$maxAttempts failed', error: e,);
         if (attempt < maxAttempts) {
           final backoff = baseBackoff * (1 << (attempt - 1)) +
               Duration(milliseconds: random.nextInt(500));
@@ -82,7 +82,7 @@ class SubscriptionFetcher {
       }
     }
     throw SubscriptionFetchException(
-        'Failed after $maxAttempts attempts: $lastError');
+        'Failed after $maxAttempts attempts: $lastError',);
   }
 
   Future<String> _attempt({
@@ -90,7 +90,7 @@ class SubscriptionFetcher {
     required String userAgent,
     required Duration timeout,
     required bool allowInsecure,
-  }) async {
+  },) async {
     final client = _sharedClient ?? _createClient(allowInsecure: allowInsecure);
     final ownsClient = _sharedClient == null;
     try {
@@ -99,7 +99,7 @@ class SubscriptionFetcher {
           .timeout(timeout);
       if (response.statusCode != 200) {
         throw SubscriptionFetchException(
-            'HTTP ${response.statusCode}', statusCode: response.statusCode);
+            'HTTP ${response.statusCode}', statusCode: response.statusCode,);
       }
       return response.body;
     } finally {

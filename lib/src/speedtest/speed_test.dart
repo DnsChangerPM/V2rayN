@@ -23,7 +23,7 @@ class SpeedTestResult {
     this.downloadKbps,
     this.uploadKbps,
     this.detail = '',
-  });
+  },);
 
   final int? serverPingMs;
   final int? chainLatencyMs;
@@ -45,7 +45,7 @@ class SpeedTestService {
     required ProxyProfile profile,
     required AppSettings settings,
     bool includeThroughput = true,
-  }) async {
+  },) async {
     _log.info('speedtest', 'Starting speed test for ${profile.name}');
     final connectivity = ConnectivityService(log: _log);
     final ping = await connectivity.probeTcp(profile.address, profile.port);
@@ -65,7 +65,7 @@ class SpeedTestService {
     final upload = await _measureUpload(settings);
     _log.info('speedtest',
         'Done: ping=${ping.latencyMs} chain=${chain.latencyMs} '
-        'down=${download}kbps up=${upload}kbps');
+        'down=${download}kbps up=${upload}kbps',);
     return SpeedTestResult(
       serverPingMs: ping.latencyMs,
       chainLatencyMs: chain.latencyMs,

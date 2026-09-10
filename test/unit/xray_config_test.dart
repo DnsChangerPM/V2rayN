@@ -30,7 +30,7 @@ void main() {
       expect(
           (outbounds.first['settings']['vnext'] as List<dynamic>)
               .first['address'],
-          'example.com');
+          'example.com',);
     });
 
     test('all protocols build', () {
@@ -41,14 +41,14 @@ void main() {
             protocol: ProxyProtocol.vmess,
             address: 'h',
             port: 1,
-            secret: _uuid),
+            secret: _uuid,),
         ProxyProfile(
             id: 'b',
             name: 'b',
             protocol: ProxyProtocol.trojan,
             address: 'h',
             port: 1,
-            secret: 'pw'),
+            secret: 'pw',),
         ProxyProfile(
             id: 'c',
             name: 'c',
@@ -56,25 +56,25 @@ void main() {
             address: 'h',
             port: 1,
             secret: 'pw',
-            method: 'aes-256-gcm'),
+            method: 'aes-256-gcm',),
         ProxyProfile(
             id: 'd',
             name: 'd',
             protocol: ProxyProtocol.socks,
             address: 'h',
-            port: 1),
+            port: 1,),
         ProxyProfile(
             id: 'e',
             name: 'e',
             protocol: ProxyProtocol.http,
             address: 'h',
-            port: 1),
+            port: 1,),
       ];
       for (final profile in profiles) {
         final config = _builder.build(
-            profile: profile, settings: const AppSettings());
+            profile: profile, settings: const AppSettings(),);
         expect(_validator.validate(config).isValid, isTrue,
-            reason: profile.protocol.name);
+            reason: profile.protocol.name,);
       }
     });
 
@@ -88,7 +88,7 @@ void main() {
       final config =
           _builder.build(profile: raw, settings: const AppSettings());
       final tags = [
-        for (final b in (config['inbounds'] as List<dynamic>)) b['tag'] as String
+        for (final b in (config['inbounds'] as List<dynamic>)) b['tag'] as String,
       ];
       expect(tags, containsAll(['socks-in', 'http-in', 'api']));
     });
@@ -97,7 +97,7 @@ void main() {
       final config = _builder.build(
         profile: _vless,
         settings: const AppSettings(
-            routing: RoutingSettings(mode: RoutingMode.direct)),
+            routing: RoutingSettings(mode: RoutingMode.direct),),
       );
       final rules =
           (config['routing'] as Map<String, dynamic>)['rules']
@@ -109,15 +109,15 @@ void main() {
       final config = _builder.build(
         profile: _vless,
         settings: const AppSettings(
-            inbounds: InboundSettings(socksPort: 11111, httpPort: 22222)),
+            inbounds: InboundSettings(socksPort: 11111, httpPort: 22222),),
       );
       final inbounds = config['inbounds'] as List<dynamic>;
       expect(
           inbounds.firstWhere((b) => b['tag'] == 'socks-in')['port'],
-          11111);
+          11111,);
       expect(
           inbounds.firstWhere((b) => b['tag'] == 'http-in')['port'],
-          22222);
+          22222,);
     });
   });
 
@@ -125,13 +125,13 @@ void main() {
     test('rejects missing outbounds', () {
       final result = _validator.validate({
         'inbounds': [
-          {'tag': 'socks-in', 'protocol': 'socks', 'port': 10808}
+          {'tag': 'socks-in', 'protocol': 'socks', 'port': 10808},
         ],
         'outbounds': <dynamic>[],
       });
       expect(result.isValid, isFalse);
       expect(result.issues.map((i) => i.messageKey),
-          contains('configErrorNoOutbounds'));
+          contains('configErrorNoOutbounds'),);
     });
 
     test('rejects bad ports and dup tags', () {
@@ -141,7 +141,7 @@ void main() {
           {'tag': 'x', 'protocol': 'http', 'port': 10809},
         ],
         'outbounds': [
-          {'tag': 'proxy', 'protocol': 'vless', 'settings': <String, dynamic>{}}
+          {'tag': 'proxy', 'protocol': 'vless', 'settings': <String, dynamic>{}},
         ],
       });
       expect(result.isValid, isFalse);
@@ -153,7 +153,7 @@ void main() {
     test('minimal complete config is valid', () {
       final result = _validator.validate({
         'inbounds': [
-          {'tag': 'socks-in', 'protocol': 'socks', 'port': 10808}
+          {'tag': 'socks-in', 'protocol': 'socks', 'port': 10808},
         ],
         'outbounds': [
           {
@@ -165,12 +165,12 @@ void main() {
                   'address': 'example.com',
                   'port': 443,
                   'users': [
-                    {'id': _uuid, 'encryption': 'none'}
+                    {'id': _uuid, 'encryption': 'none'},
                   ],
-                }
+                },
               ],
             },
-          }
+          },
         ],
       });
       expect(result.issues, isEmpty);
@@ -180,15 +180,15 @@ void main() {
     test('empty vnext is rejected', () {
       final result = _validator.validate({
         'inbounds': [
-          {'tag': 'socks-in', 'protocol': 'socks', 'port': 10808}
+          {'tag': 'socks-in', 'protocol': 'socks', 'port': 10808},
         ],
         'outbounds': [
-          {'tag': 'proxy', 'protocol': 'vless', 'settings': <String, dynamic>{}}
+          {'tag': 'proxy', 'protocol': 'vless', 'settings': <String, dynamic>{}},
         ],
       });
       expect(result.isValid, isFalse);
       expect(result.issues.map((i) => i.messageKey),
-          contains('configErrorEmptySettings'));
+          contains('configErrorEmptySettings'),);
     });
   });
 }

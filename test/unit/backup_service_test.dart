@@ -16,7 +16,7 @@ void main() {
     temp = await Directory.systemTemp.createTemp('backup-test-');
     log = LogService(
         logDir: Directory('${temp.path}/logs'),
-        minLevel: LogLevel.error);
+        minLevel: LogLevel.error,);
   });
 
   tearDown(() async {
@@ -81,9 +81,9 @@ void main() {
         await service().importFromFile(file, password: 'correct horse');
     expect(imported.profiles.single.secret, 'TOPSECRET');
     expect(imported.subscriptions.single.url,
-        'https://example.com/sub?token=abc');
+        'https://example.com/sub?token=abc',);
     expect(imported.settings.inbounds.socksPort,
-        settings.inbounds.socksPort);
+        settings.inbounds.socksPort,);
   });
 
   test('wrong password fails closed', () async {
@@ -96,7 +96,7 @@ void main() {
       password: 'correct horse',
     );
     expect(() => service().importFromFile(file, password: 'wrong'),
-        throwsA(anything));
+        throwsA(anything),);
     expect(() => service().importFromFile(file), throwsA(anything));
   });
 }

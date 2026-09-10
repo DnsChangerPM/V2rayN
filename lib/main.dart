@@ -7,7 +7,7 @@ library;
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:window_manager/window_manager.dart';
 
 import 'app.dart';
@@ -47,7 +47,7 @@ Future<void> main(List<String> args) async {
           await windowManager.show();
           await windowManager.focus();
         }
-      },
+      }
     );
     await windowManager.setPreventClose(true);
   }
@@ -103,7 +103,7 @@ Future<void> _postLaunch(AppServices services, _WindowCloseHandler handler) asyn
     final info = await services.updates.checkForUpdates();
     if (info != null && info.isAvailable) {
       services.log.info('update',
-          'Update available: ${info.current} -> ${info.latest} (${info.releaseUrl})');
+          'Update available: ${info.current} -> ${info.latest} (${info.releaseUrl})',);
     }
   }
 }
@@ -111,7 +111,7 @@ Future<void> _postLaunch(AppServices services, _WindowCloseHandler handler) asyn
 /// Connection control shared by tray + auto-connect (headless path that does
 /// not need a BuildContext).
 Future<void> _toggleFromTray(AppServices services,
-    {bool onlyConnect = false}) async {
+    {bool onlyConnect = false},) async {
   final core = services.core;
   if (core.status.name == 'running') {
     if (onlyConnect) return;

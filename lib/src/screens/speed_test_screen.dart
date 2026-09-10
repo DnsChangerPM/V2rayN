@@ -60,7 +60,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                   )
                 : const Icon(Icons.speed),
             label: Text(context.l10n(
-                _running ? 'speedTestRunning' : 'speedTestRun')),
+                _running ? 'speedTestRunning' : 'speedTestRun',),),
           ),
           if (!connection.isConnected) ...[
             const SizedBox(height: 8),

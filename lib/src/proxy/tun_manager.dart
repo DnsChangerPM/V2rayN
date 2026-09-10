@@ -49,17 +49,17 @@ class TunManager {
   TunCapability capability() {
     if (!_os.isWindows) {
       return const TunCapability(
-          available: false, reasonKey: 'tunUnsupportedPlatform');
+          available: false, reasonKey: 'tunUnsupportedPlatform',);
     }
     if (!_os.supportsTun) {
       return const TunCapability(
-          available: false, reasonKey: 'tunUnsupportedLegacyWindows');
+          available: false, reasonKey: 'tunUnsupportedLegacyWindows',);
     }
     // Win10+: driver + helper are not bundled in v1 (documented roadmap).
     final driverPresent = File(driverSearchPath).existsSync();
     _log.debug('tun', 'Capability check: wintun present=$driverPresent');
     return const TunCapability(
-        available: false, reasonKey: 'tunNotBundledInVersion');
+        available: false, reasonKey: 'tunNotBundledInVersion',);
   }
 
   /// Attempt to enable TUN. In v1 this always reports the honest reason

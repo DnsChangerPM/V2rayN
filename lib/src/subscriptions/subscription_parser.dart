@@ -38,7 +38,7 @@ ParsedSubscription parseSubscriptionContent(
   String content, {
   required String subscriptionId,
   String fallbackNamePrefix = 'profile',
-}) {
+},) {
   if (content.length > kMaxSubscriptionBytes) {
     throw const SubscriptionTooLargeException();
   }
@@ -61,13 +61,13 @@ ParsedSubscription parseSubscriptionContent(
     final profile = parseShareLink(line, newId: () => '$subscriptionId:$index');
     if (profile == null) {
       errors.add(SubscriptionParseError(
-          line: i + 1, reason: 'unrecognized or invalid link'));
+          line: i + 1, reason: 'unrecognized or invalid link',),);
       continue;
     }
     profiles.add(profile.copyWith(
       subscriptionId: subscriptionId,
       name: profile.name.isEmpty ? '$fallbackNamePrefix ${index + 1}' : profile.name,
-    ));
+    ),);
     index++;
   }
   return ParsedSubscription(profiles: profiles, errors: errors);

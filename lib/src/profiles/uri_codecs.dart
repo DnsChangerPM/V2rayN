@@ -32,9 +32,9 @@ String decodeBase64Text(String input) {
   } on FormatException {
     // Some links are base64-of-base64 or url-encoded payloads.
     final once = utf8.decode(base64.decode(normalizeBase64(input)),
-        allowMalformed: true);
+        allowMalformed: true,);
     return utf8.decode(base64.decode(normalizeBase64(once)),
-        allowMalformed: true);
+        allowMalformed: true,);
   }
 }
 
@@ -299,7 +299,7 @@ ProxyProfile? _parseSocks(String link, String id) {
   if ((uri == null || uri.host.isEmpty) && !normalized.contains('@')) {
     try {
       final decoded = decodeBase64Text(
-          normalized.substring(normalized.indexOf('://') + 3));
+          normalized.substring(normalized.indexOf('://') + 3),);
       uri = Uri.tryParse('socks5://$decoded');
     } on FormatException {
       return null;

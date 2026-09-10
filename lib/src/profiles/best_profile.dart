@@ -24,7 +24,7 @@ class ProfileScore {
     this.chainLatencyMs,
     this.jitterMs,
     this.detail = '',
-  });
+  },);
 
   final ProxyProfile profile;
   final bool reachable;
@@ -47,7 +47,7 @@ class BestProfileSelector {
     required ConnectivityService connectivity,
     required ProfileRepositoryPort repository,
     required LogService log,
-  })  : _probe = probe,
+  },)  : _probe = probe,
         _connectivity = connectivity,
         _repository = repository,
         _log = log;
@@ -67,7 +67,7 @@ class BestProfileSelector {
     int fastConcurrency = 5,
     int chainConcurrency = 2,
     int chainSamples = 2,
-  }) async {
+  },) async {
     _cancelled = false;
     _log.info('best', 'Ranking ${candidates.length} profiles');
 
@@ -93,11 +93,11 @@ class BestProfileSelector {
     for (final score in measured) {
       if (score.chainLatencyMs != null) {
         await _repository.recordLatency(
-            score.profile.id, score.chainLatencyMs!);
+            score.profile.id, score.chainLatencyMs!,);
       }
     }
     _log.info('best',
-        'Ranking done: ${measured.length} measured, ${failed.length} unreachable');
+        'Ranking done: ${measured.length} measured, ${failed.length} unreachable',);
     return ranked;
   }
 
@@ -115,7 +115,7 @@ class BestProfileSelector {
   }
 
   Future<ProfileScore> _chainMeasure(
-      ProfileScore score, AppSettings settings, int samples) async {
+      ProfileScore score, AppSettings settings, int samples,) async {
     if (_cancelled) return score;
     final latencies = <int>[];
     var detail = '';
@@ -149,7 +149,7 @@ class BestProfileSelector {
 
   /// Bounded-concurrency map preserving input order.
   Future<List<R>> _mapPool<T, R>(
-      List<T> items, int concurrency, Future<R> Function(T) task) async {
+      List<T> items, int concurrency, Future<R> Function(T) task,) async {
     final results = List<R?>.filled(items.length, null);
     var next = 0;
     Future<void> worker() async {

@@ -34,7 +34,7 @@ class BackupService {
     required List<ProxyProfile> profiles,
     required List<Subscription> subscriptions,
     String password = '',
-  }) async {
+  },) async {
     final withSecrets = password.isNotEmpty;
     final envelope = <String, dynamic>{
       'app': 'IranLink',
@@ -61,9 +61,9 @@ class BackupService {
     }
     await file.parent.create(recursive: true);
     await file.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(envelope));
+        const JsonEncoder.withIndent('  ').convert(envelope),);
     _log.info('backup',
-        'Exported backup (secrets=${withSecrets ? 'encrypted' : 'excluded'})');
+        'Exported backup (secrets=${withSecrets ? 'encrypted' : 'excluded'})',);
   }
 
   Future<BackupData> importFromFile(File file, {String password = ''}) async {
@@ -87,7 +87,7 @@ class BackupService {
         throw const FormatException('Backup secrets block is corrupt');
       }
       final opened = json.decode(
-          _open(sealed.cast<String, dynamic>(), password));
+          _open(sealed.cast<String, dynamic>(), password),);
       if (opened is! Map<dynamic, dynamic>) {
         throw const FormatException('Backup secrets block is corrupt');
       }
@@ -99,7 +99,7 @@ class BackupService {
           (opened['rawJson'] as Map<dynamic, dynamic>?)?.map((k, v) => MapEntry(k.toString(), v.toString())) ?? {};
     }
     final settings = AppSettings.fromJson(
-        (envelope['settings'] as Map<dynamic, dynamic>?)?.cast<String, dynamic>() ?? {});
+        (envelope['settings'] as Map<dynamic, dynamic>?)?.cast<String, dynamic>() ?? {},);
     final profiles = <ProxyProfile>[];
     for (final item in (envelope['profiles'] as List<dynamic>? ?? []).whereType<Map<dynamic, dynamic>>()) {
       try {
@@ -130,7 +130,7 @@ class BackupService {
     return BackupData(
         settings: settings,
         profiles: profiles,
-        subscriptions: subscriptions);
+        subscriptions: subscriptions,);
   }
 
   // -- password-based envelope encryption (PBKDF2-HMAC-SHA256 + AES-GCM) ------
@@ -141,7 +141,7 @@ class BackupService {
         Uint8List.fromList(List.generate(16, (_) => random.nextInt(256)));
     final key = _pbkdf2(utf8.encode(password), salt);
     final encrypter = encrypt.Encrypter(
-        encrypt.AES(encrypt.Key(key), mode: encrypt.AESMode.gcm));
+        encrypt.AES(encrypt.Key(key), mode: encrypt.AESMode.gcm),);
     final iv = encrypt.IV.fromSecureRandom(12);
     final cipher = encrypter.encrypt(plaintext, iv: iv);
     return {
@@ -156,7 +156,7 @@ class BackupService {
     final salt = base64.decode(sealed['salt'].toString());
     final key = _pbkdf2(utf8.encode(password), salt);
     final encrypter = encrypt.Encrypter(
-        encrypt.AES(encrypt.Key(key), mode: encrypt.AESMode.gcm));
+        encrypt.AES(encrypt.Key(key), mode: encrypt.AESMode.gcm),);
     return encrypter.decrypt64(
       sealed['data'].toString(),
       iv: encrypt.IV.fromBase64(sealed['iv'].toString()),
@@ -164,7 +164,7 @@ class BackupService {
   }
 
   Uint8List _pbkdf2(List<int> password, List<int> salt,
-      {int iterations = 600000, int length = 32}) {
+      {int iterations = 600000, int length = 32},) {
     var block = Uint8List(0);
     var result = <int>[];
     var counter = 1;
@@ -200,7 +200,7 @@ class BackupData {
     required this.settings,
     required this.profiles,
     required this.subscriptions,
-  });
+  },);
 
   final AppSettings settings;
   final List<ProxyProfile> profiles;

@@ -85,26 +85,26 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
                   ? context.l10n('unknown')
                   : '${report.systemProxy!.enabled ? context.l10n('connected') : context.l10n('disconnected')}'
                       ' ${report.systemProxy!.server}',
-            }),
+            },),
             SectionHeader(title: context.l10n('localPorts')),
             _InfoCard(rows: {
               for (final port in report.ports)
                 '${port.label} ${port.port}': port.free
                     ? context.l10n('portFree')
                     : '${context.l10n('portBusy')} (pid=${port.ownerPid ?? '?'})',
-            }),
+            },),
             SectionHeader(title: context.l10n('localAddresses')),
             _InfoCard(rows: {
               for (var i = 0; i < report.localAddresses.length; i++)
                 '#$i': report.localAddresses[i],
-            }),
+            },),
             if (report.probes.isNotEmpty) ...[
               SectionHeader(title: context.l10n('connectivityChecks')),
               _InfoCard(rows: {
                 for (final probe in report.probes)
                   probe.name:
                       '${probe.success ? 'OK' : 'FAIL'}${probe.latencyMs == null ? '' : ' ${probe.latencyMs}ms'}${probe.detail.isEmpty ? '' : ' (${probe.detail})'}',
-              }),
+              },),
             ],
           ],
         ],
@@ -125,7 +125,7 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(context.l10n(
-              path == null ? 'cancel' : 'diagnosticsExported')),
+              path == null ? 'cancel' : 'diagnosticsExported',),),
         ),
       );
     } on Object {

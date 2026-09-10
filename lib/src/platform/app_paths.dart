@@ -55,7 +55,7 @@ class AppPaths {
     await File(p.join(exeDir.path, 'portable.marker'))
         .writeAsString('IranLink portable mode. Delete this file to use %AppData% paths.\n');
     return AppPaths._(
-        base: Directory(p.join(exeDir.path, 'Data')), portable: true);
+        base: Directory(p.join(exeDir.path, 'Data')), portable: true,);
   }
 
   /// Test seam (and smoke-test sandbox).

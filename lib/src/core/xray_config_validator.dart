@@ -47,12 +47,12 @@ class XrayConfigValidator {
       if (port is! int || !isValidPort(port)) {
         issues.add(ConfigIssue(
             messageKey: 'configErrorBadPort',
-            detail: 'inbound ${inbound['tag']} port=$port'));
+            detail: 'inbound ${inbound['tag']} port=$port',),);
       }
       if ((inbound['protocol'] ?? '').toString().isEmpty) {
         issues.add(ConfigIssue(
             messageKey: 'configErrorMissingProtocol',
-            detail: 'inbound ${inbound['tag']}'));
+            detail: 'inbound ${inbound['tag']}',),);
       }
     }
     var hasProxy = false;
@@ -61,7 +61,7 @@ class XrayConfigValidator {
       if ((outbound['protocol'] ?? '').toString().isEmpty) {
         issues.add(ConfigIssue(
             messageKey: 'configErrorMissingProtocol',
-            detail: 'outbound ${outbound['tag']}'));
+            detail: 'outbound ${outbound['tag']}',),);
       }
       if (outbound['tag'] == XrayTags.proxy) hasProxy = true;
       _checkOutboundSettings(outbound, issues);
@@ -80,7 +80,7 @@ class XrayConfigValidator {
             !tags.contains(target)) {
           issues.add(ConfigIssue(
               messageKey: 'configErrorUnknownOutbound',
-              detail: 'rule -> $target'));
+              detail: 'rule -> $target',),);
         }
       }
     }
@@ -97,34 +97,34 @@ class XrayConfigValidator {
   }
 
   void _checkTag(Map<String, dynamic> block, Set<String> tags,
-      List<ConfigIssue> issues, {required bool isInbound}) {
+      List<ConfigIssue> issues, {required bool isInbound},) {
     final tag = (block['tag'] ?? '').toString();
     final kind = isInbound ? 'inbound' : 'outbound';
     if (tag.isEmpty) {
       issues.add(ConfigIssue(
-          messageKey: 'configErrorMissingTag', detail: kind));
+          messageKey: 'configErrorMissingTag', detail: kind,),);
     } else if (!tags.add(tag)) {
       issues.add(ConfigIssue(
-          messageKey: 'configErrorDuplicateTag', detail: tag));
+          messageKey: 'configErrorDuplicateTag', detail: tag,),);
     }
   }
 
   void _checkOutboundSettings(
-      Map<String, dynamic> outbound, List<ConfigIssue> issues) {
+      Map<String, dynamic> outbound, List<ConfigIssue> issues,) {
     final protocol = (outbound['protocol'] ?? '').toString();
     if (protocol == 'freedom' || protocol == 'blackhole') return;
     final settings = outbound['settings'];
     if (settings is! Map<dynamic, dynamic> || settings.isEmpty) {
       issues.add(ConfigIssue(
           messageKey: 'configErrorEmptySettings',
-          detail: '$protocol ${outbound['tag']}'));
+          detail: '$protocol ${outbound['tag']}',),);
       return;
     }
     if (protocol == 'vmess' || protocol == 'vless') {
       final vnext = _asMapList(settings['vnext']);
       if (vnext.isEmpty) {
         issues.add(ConfigIssue(
-            messageKey: 'configErrorEmptySettings', detail: protocol));
+            messageKey: 'configErrorEmptySettings', detail: protocol,),);
         return;
       }
       for (final server in vnext) {
@@ -137,7 +137,7 @@ class XrayConfigValidator {
         }
         if (_asMapList(server['users']).isEmpty) {
           issues.add(ConfigIssue(
-              messageKey: 'configErrorEmptyUsers', detail: protocol));
+              messageKey: 'configErrorEmptyUsers', detail: protocol,),);
         }
       }
     } else if (protocol == 'trojan' ||
@@ -147,7 +147,7 @@ class XrayConfigValidator {
       final servers = _asMapList(settings['servers']);
       if (servers.isEmpty) {
         issues.add(ConfigIssue(
-            messageKey: 'configErrorEmptySettings', detail: protocol));
+            messageKey: 'configErrorEmptySettings', detail: protocol,),);
         return;
       }
       for (final server in servers) {

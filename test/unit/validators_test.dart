@@ -38,7 +38,7 @@ void main() {
 
   test('maskUrl hides secrets', () {
     expect(maskUrl('https://example.com/sub?token=secret123'),
-        'https://example.com/•••');
+        'https://example.com/•••',);
     expect(maskUrl('https://user:pass@example.com/'), 'https://user@example.com/•••');
     expect(maskUrl('https://example.com'), 'https://example.com');
     expect(maskUrl('garbage'), '<invalid-url>');

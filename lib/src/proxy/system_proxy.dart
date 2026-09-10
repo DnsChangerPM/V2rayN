@@ -22,7 +22,7 @@ class SystemProxyState {
     required this.enabled,
     required this.server,
     required this.bypass,
-  });
+  },);
 
   final bool enabled;
   final String server;
@@ -64,7 +64,7 @@ class SystemProxyService {
   Future<void> enable({
     required String server,
     String bypass = 'localhost;127.*',
-  }) async {
+  },) async {
     final before = current();
     if (!_owned) _previous = before;
     WindowsRegistry.writeDword(internetSettingsKey, 'ProxyEnable', 1);
@@ -86,11 +86,11 @@ class SystemProxyService {
       WindowsRegistry.writeDword(internetSettingsKey, 'ProxyEnable', 0);
     } else {
       WindowsRegistry.writeDword(
-          internetSettingsKey, 'ProxyEnable', previous.enabled ? 1 : 0);
+          internetSettingsKey, 'ProxyEnable', previous.enabled ? 1 : 0,);
       WindowsRegistry.writeString(
-          internetSettingsKey, 'ProxyServer', previous.server);
+          internetSettingsKey, 'ProxyServer', previous.server,);
       WindowsRegistry.writeString(
-          internetSettingsKey, 'ProxyOverride', previous.bypass);
+          internetSettingsKey, 'ProxyOverride', previous.bypass,);
     }
     final refreshed = Wininet.refreshProxySettings();
     _owned = false;

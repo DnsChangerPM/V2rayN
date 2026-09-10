@@ -38,7 +38,7 @@ class CoreManager {
     required OsInfo os,
     required LogService log,
     this.maxRestarts = 3,
-  })  : _adapter = adapter,
+  },)  : _adapter = adapter,
         _builder = builder,
         _validator = validator,
         _statsClient = statsClient,
@@ -165,7 +165,7 @@ class CoreManager {
     if (first.existsSync()) return first.path;
     if (second.existsSync()) {
       _log.warning('core',
-          'Preferred core missing, falling back to ${p.basename(second.path)}');
+          'Preferred core missing, falling back to ${p.basename(second.path)}',);
       return second.path;
     }
     return null;
@@ -176,7 +176,7 @@ class CoreManager {
   Future<void> connect({
     required ProxyProfile profile,
     required AppSettings settings,
-  }) async {
+  },) async {
     if (_disposed) return;
     if (_status == CoreStatus.starting || _status == CoreStatus.running) {
       _log.warning('core', 'connect() ignored: already ${_status.name}');
@@ -202,15 +202,15 @@ class CoreManager {
       config = _builder.build(profile: profile, settings: settings);
     } on Object catch (e) {
       return _fail(AppFailure(
-          messageKey: 'coreErrorInvalidConfig', details: e.toString()));
+          messageKey: 'coreErrorInvalidConfig', details: e.toString(),),);
     }
     final validation = _validator.validate(config);
     if (!validation.isValid) {
       final first = validation.issues.first;
       _log.error('core',
-          'Config invalid: ${validation.issues.length} issues (${first.messageKey})');
+          'Config invalid: ${validation.issues.length} issues (${first.messageKey})',);
       return _fail(AppFailure(
-          messageKey: 'coreErrorInvalidConfig', details: first.messageKey));
+          messageKey: 'coreErrorInvalidConfig', details: first.messageKey,),);
     }
 
     _configPath =
@@ -221,12 +221,12 @@ class CoreManager {
           .writeAsString(const JsonEncoder.withIndent('  ').convert(config));
     } on Object catch (e) {
       return _fail(AppFailure(
-          messageKey: 'coreErrorConfigWrite', details: e.toString()));
+          messageKey: 'coreErrorConfigWrite', details: e.toString(),),);
     }
 
     try {
       _process = await _adapter.start(
-          CoreStartRequest(executable: exe, configPath: _configPath));
+          CoreStartRequest(executable: exe, configPath: _configPath),);
     } on Object catch (e) {
       await _deleteConfig();
       return _fail(_mapSpawnError(e));
@@ -235,7 +235,7 @@ class CoreManager {
     _log.info('core', 'Spawned ${_adapter.coreName} (pid=$pid)');
     unawaited(File(p.join(_paths.cacheDir.path, 'iranlink-core.pid'))
         .writeAsString('$pid')
-        .catchError((_) => File('')));
+        .catchError((_) => File('')),);
 
     _expectExit = false;
     _subscribeStderr();
@@ -285,13 +285,13 @@ class CoreManager {
     final text = error.toString().toLowerCase();
     if (text.contains('access is denied') || text.contains('access denied')) {
       return AppFailure(
-          messageKey: 'coreErrorPermission', details: error.toString());
+          messageKey: 'coreErrorPermission', details: error.toString(),);
     }
     if (text.contains('not found') || text.contains('no such file')) {
       return const AppFailure(messageKey: 'coreErrorMissingExe');
     }
     return AppFailure(
-        messageKey: 'coreErrorStartFailed', details: error.toString());
+        messageKey: 'coreErrorStartFailed', details: error.toString(),);
   }
 
   void _subscribeStderr() {
@@ -326,7 +326,7 @@ class CoreManager {
     _fail(AppFailure(
       messageKey: 'coreErrorStartTimeout',
       details: _recentCoreOutput.take(5).join(' | '),
-    ));
+    ),);
     return false;
   }
 
@@ -359,13 +359,13 @@ class CoreManager {
     if (tail.contains('address already in use') ||
         tail.contains('bind:') && tail.contains('in use')) {
       return AppFailure(
-          messageKey: 'proxyErrorPortBusy', details: 'exit=$exitCode');
+          messageKey: 'proxyErrorPortBusy', details: 'exit=$exitCode',);
     }
     if (tail.contains('invalid') ||
         tail.contains('failed to parse') ||
         tail.contains('bad ') && tail.contains('config')) {
       return AppFailure(
-          messageKey: 'coreErrorInvalidConfig', details: 'exit=$exitCode');
+          messageKey: 'coreErrorInvalidConfig', details: 'exit=$exitCode',);
     }
     if (tail.contains('permission denied') || tail.contains('access is denied')) {
       return const AppFailure(messageKey: 'coreErrorPermission');
@@ -387,12 +387,12 @@ class CoreManager {
     _restartAttempts++;
     if (_restartAttempts > maxRestarts) {
       _log.error(
-          'core', 'Crash loop: $maxRestarts restarts exhausted, giving up');
+          'core', 'Crash loop: $maxRestarts restarts exhausted, giving up',);
       _fail(const AppFailure(messageKey: 'coreErrorCrashed'));
       return;
     }
     _log.warning('core',
-        'Auto-restart attempt $_restartAttempts/$maxRestarts in 2s');
+        'Auto-restart attempt $_restartAttempts/$maxRestarts in 2s',);
     await Future<void>.delayed(const Duration(seconds: 2));
     if (_disposed || _status != CoreStatus.crashed) return;
     // connect() moves crashed -> starting itself; attempts are preserved
@@ -466,7 +466,7 @@ class CoreManager {
     _statsTimer = Timer.periodic(const Duration(seconds: 1), (_) async {
       if (_status != CoreStatus.running) return;
       final traffic = await _statsClient.proxyTraffic(
-          host: '127.0.0.1', port: settings.statsPort);
+          host: '127.0.0.1', port: settings.statsPort,);
       if (_status != CoreStatus.running) return;
       if (traffic == null) {
         if (!_statsDegradedLogged) {
@@ -496,7 +496,7 @@ class CoreManager {
         downloadSpeedBps: downSpeed,
         uploadSpeedBps: upSpeed,
         connectedAt: _connectedAt,
-      ));
+      ),);
     });
   }
 

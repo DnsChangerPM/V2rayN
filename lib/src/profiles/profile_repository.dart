@@ -13,7 +13,7 @@ class ProfileRepository implements ProfileRepositoryPort {
     required JsonStore store,
     required String Function() newId,
     required LogService log,
-  })  : _store = store,
+  },)  : _store = store,
         _newId = newId,
         _log = log;
 
@@ -160,7 +160,7 @@ class ProfileRepository implements ProfileRepositoryPort {
   /// Atomically replace all profiles owned by [subscriptionId], preserving
   /// user state (favorite, group, latency) matched by [ProxyProfile.identityKey].
   Future<void> replaceSubscriptionProfiles(
-      String subscriptionId, List<ProxyProfile> fresh) async {
+      String subscriptionId, List<ProxyProfile> fresh,) async {
     final preserved = <String, ProxyProfile>{
       for (final p in _profiles.where((p) => p.subscriptionId == subscriptionId))
         p.identityKey: p,
@@ -177,7 +177,7 @@ class ProfileRepository implements ProfileRepositoryPort {
               lastLatencyMs: old.lastLatencyMs,
               lastSpeedKbps: old.lastSpeedKbps,
               lastUsedAt: old.lastUsedAt,
-            ));
+            ),);
     }
     await _persist();
   }
@@ -222,7 +222,7 @@ class ProfileRepository implements ProfileRepositoryPort {
     String groupId = BuiltinGroups.all,
     ProfileSortKey sortKey = ProfileSortKey.name,
     SortDirection direction = SortDirection.ascending,
-  }) {
+  },) {
     Iterable<ProxyProfile> result = _profiles;
     if (groupId == BuiltinGroups.favorites) {
       result = result.where((p) => p.isFavorite);
@@ -235,7 +235,7 @@ class ProfileRepository implements ProfileRepositoryPort {
           p.name.toLowerCase().contains(needle) ||
           p.address.toLowerCase().contains(needle) ||
           p.protocol.name.contains(needle) ||
-          _groupName(p.groupId).toLowerCase().contains(needle));
+          _groupName(p.groupId).toLowerCase().contains(needle),);
     }
     final sorted = result.toList()
       ..sort((a, b) {

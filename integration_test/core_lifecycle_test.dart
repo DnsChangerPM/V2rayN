@@ -5,6 +5,8 @@
 /// (127.0.0.1:9, ephemeral inbound ports) so the test makes no real network
 /// connections. SOCKS-only mode: the installer smoke test covers the system
 /// proxy roundtrip separately.
+library;
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -14,7 +16,9 @@ import 'package:iranlink/src/models/connection.dart';
 import 'package:iranlink/src/models/profile.dart';
 import 'package:iranlink/src/models/settings.dart';
 import 'package:iranlink/src/platform/app_paths.dart';
+import 'package:iranlink/src/state/connection_provider.dart';
 import 'package:iranlink/src/state/service_locator.dart';
+import 'package:provider/provider.dart';
 
 Future<int> _freePort() async {
   final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
@@ -41,7 +45,7 @@ void main() {
     final temp =
         await Directory.systemTemp.createTemp('iranlink-e2e-');
     final services = await AppServices.create(
-        pathsOverride: AppPaths.custom(temp, portable: true));
+        pathsOverride: AppPaths.custom(temp, portable: true),);
     addTearDown(() async {
       await services.dispose();
       await temp.delete(recursive: true).catchError((_) => temp);
@@ -54,7 +58,7 @@ void main() {
       address: '127.0.0.1',
       port: 9,
       secret: '123e4567-e89b-12d3-a456-426614174000',
-    ));
+    ),);
     await services.settings.update((s) => s.copyWith(
           activeProfileId: profile.id,
           proxyMode: ProxyMode.socks,
@@ -62,21 +66,27 @@ void main() {
             socksPort: socksPort,
             httpPort: httpPort,
           ),
-        ));
+        ),);
 
     await tester.pumpWidget(IranLinkApp(services: services));
     await tester.pumpAndSettle();
 
-    await services.connection.connect();
+    final element = tester.element(find.text('CONNECT'));
+    final connection =
+        Provider.of<ConnectionProvider>(element, listen: false);
+    await connection.connect();
     await tester.pumpAndSettle();
-    expect(services.connection.state, ConnectionState.connected,
-        reason: services.connection.failureKey);
+    expect(
+      connection.state,
+      ConnectionState.connected,
+      reason: connection.failureKey,
+    );
     expect(services.core.status, CoreStatus.running);
     expect(find.text('DISCONNECT'), findsOneWidget);
 
-    await services.connection.disconnect();
+    await connection.disconnect();
     await tester.pumpAndSettle();
-    expect(services.connection.state, ConnectionState.disconnected);
+    expect(connection.state, ConnectionState.disconnected);
     expect(find.text('CONNECT'), findsOneWidget);
   });
 }

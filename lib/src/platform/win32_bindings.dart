@@ -21,9 +21,9 @@ import 'package:ffi/ffi.dart';
 // ---------------------------------------------------------------------------
 
 typedef _InternetSetOptionNative = Int32 Function(
-    Pointer<Void> hInternet, Uint32 dwOption, Pointer<Void> lpBuffer, Uint32 dwBufferLength);
+    Pointer<Void> hInternet, Uint32 dwOption, Pointer<Void> lpBuffer, Uint32 dwBufferLength,);
 typedef _InternetSetOptionDart = int Function(
-    Pointer<Void> hInternet, int dwOption, Pointer<Void> lpBuffer, int dwBufferLength);
+    Pointer<Void> hInternet, int dwOption, Pointer<Void> lpBuffer, int dwBufferLength,);
 
 abstract final class Wininet {
   static const int internetOptionSettingsChanged = 39;

@@ -28,7 +28,7 @@ class Stat extends pb.GeneratedMessage {
   Stat._() : super();
 
   factory Stat.fromBuffer(List<int> data,
-          [pb.ExtensionRegistry registry = pb.ExtensionRegistry.EMPTY]) =>
+          [pb.ExtensionRegistry registry = pb.ExtensionRegistry.EMPTY],) =>
       create()..mergeFromBuffer(data, registry);
 
   static final pb.BuilderInfo _i = pb.BuilderInfo(
@@ -69,7 +69,7 @@ class QueryStatsRequest extends pb.GeneratedMessage {
   QueryStatsRequest._() : super();
 
   factory QueryStatsRequest.fromBuffer(List<int> data,
-          [pb.ExtensionRegistry registry = pb.ExtensionRegistry.EMPTY]) =>
+          [pb.ExtensionRegistry registry = pb.ExtensionRegistry.EMPTY],) =>
       create()..mergeFromBuffer(data, registry);
 
   static final pb.BuilderInfo _i = pb.BuilderInfo(
@@ -103,7 +103,7 @@ class QueryStatsResponse extends pb.GeneratedMessage {
   QueryStatsResponse._() : super();
 
   factory QueryStatsResponse.fromBuffer(List<int> data,
-          [pb.ExtensionRegistry registry = pb.ExtensionRegistry.EMPTY]) =>
+          [pb.ExtensionRegistry registry = pb.ExtensionRegistry.EMPTY],) =>
       create()..mergeFromBuffer(data, registry);
 
   static final pb.BuilderInfo _i = pb.BuilderInfo(
@@ -137,7 +137,7 @@ class StatsServiceClient extends Client {
     super.channel, {
     super.options,
     super.interceptors,
-  });
+  },);
 
   static final _$queryStats = ClientMethod<QueryStatsRequest, QueryStatsResponse>(
     '/xray.app.stats.command.StatsService/QueryStats',
@@ -148,7 +148,7 @@ class StatsServiceClient extends Client {
   ResponseFuture<QueryStatsResponse> queryStats(
     QueryStatsRequest request, {
     CallOptions? options,
-  }) =>
+  },) =>
       $createUnaryCall(_$queryStats, request, options: options);
 }
 
@@ -168,7 +168,7 @@ class XrayStatsClient {
     required String host,
     required int port,
     required String pattern,
-  }) async {
+  },) async {
     final channel = ClientChannel(
       host,
       port: port,
@@ -196,7 +196,7 @@ class XrayStatsClient {
   /// Traffic counters for the main `proxy` outbound, or null when the API
   /// is unreachable (stats disabled, core starting, API blocked).
   Future<ProxyTraffic?> proxyTraffic(
-      {required String host, required int port}) async {
+      {required String host, required int port},) async {
     try {
       final stats = await queryStats(
         host: host,

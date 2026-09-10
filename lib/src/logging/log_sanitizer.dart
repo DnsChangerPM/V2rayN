@@ -9,7 +9,7 @@ class LogSanitizer {
   LogSanitizer._();
 
   static final RegExp _uuid = RegExp(
-      r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b');
+      r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b',);
 
   /// password=..., token: "...", "passwd": "..." etc.
   static final RegExp _secretAssignment = RegExp(
@@ -47,10 +47,10 @@ class LogSanitizer {
       return '$base?<redacted>';
     });
     out = out.replaceAllMapped(
-        _secretAssignment, (m) => '${m.group(1)}${m.group(2)}<redacted>');
+        _secretAssignment, (m) => '${m.group(1)}${m.group(2)}<redacted>',);
     out = out.replaceAll(_uuid, '<redacted-uuid>');
     out = out.replaceAllMapped(
-        _bulkBlob, (m) => '<redacted-bulk:${m.group(0)!.length}chars>');
+        _bulkBlob, (m) => '<redacted-bulk:${m.group(0)!.length}chars>',);
     return out;
   }
 

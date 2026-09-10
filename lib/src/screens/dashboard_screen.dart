@@ -1,7 +1,7 @@
 /// Dashboard: connection state, active profile, traffic, quick actions.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';

@@ -30,7 +30,7 @@ class XrayProcess implements CoreProcess {
 
   @override
   Future<int> terminateGracefully(
-      {Duration timeout = const Duration(seconds: 5)}) async {
+      {Duration timeout = const Duration(seconds: 5)},) async {
     _process.kill(ProcessSignal.sigterm);
     try {
       return await _process.exitCode.timeout(timeout);
@@ -64,7 +64,7 @@ class XrayCoreAdapter implements CoreAdapter {
     final version = parseXrayVersion(output);
     if (version == null) {
       throw StateError('Unrecognized version output: '
-          '${LogSanitizer.sanitize(output).trim().split('\n').take(3).join(' | ')}');
+          '${LogSanitizer.sanitize(output).trim().split('\n').take(3).join(' | ')}',);
     }
     return version;
   }

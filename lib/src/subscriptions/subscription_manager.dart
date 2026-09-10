@@ -27,7 +27,7 @@ class SubscriptionManager {
     required SubscriptionFetcher fetcher,
     required String Function() newId,
     required LogService log,
-  })  : _store = store,
+  },)  : _store = store,
         _cacheDir = cacheDir,
         _profiles = profiles,
         _fetcher = fetcher,
@@ -55,7 +55,7 @@ class SubscriptionManager {
       ..clear()
       ..addAll(_readAll(data['subscriptions']));
     _log.info(
-        'subscriptions', 'Loaded ${_subscriptions.length} subscriptions');
+        'subscriptions', 'Loaded ${_subscriptions.length} subscriptions',);
     _rescheduleAutoRefresh();
   }
 
@@ -66,7 +66,7 @@ class SubscriptionManager {
       try {
         result.add(
             Subscription.fromJson(item.cast<String, dynamic>()).copyWith(
-                lastStatus: SubscriptionStatus.idle));
+                lastStatus: SubscriptionStatus.idle,),);
       } on Object catch (e) {
         _log.warning('subscriptions', 'Skipping unreadable entry', error: e);
       }
@@ -93,7 +93,7 @@ class SubscriptionManager {
     required String url,
     bool autoRefresh = false,
     int refreshIntervalMinutes = 240,
-  }) async {
+  },) async {
     if (!isValidUrl(url.trim())) {
       throw ArgumentError('Invalid subscription URL');
     }
@@ -139,7 +139,7 @@ class SubscriptionManager {
     final token = CancellationToken();
     _inflight[id] = token;
     _setStatus(id,
-        lastStatus: SubscriptionStatus.refreshing, lastError: '');
+        lastStatus: SubscriptionStatus.refreshing, lastError: '',);
     try {
       final body = await _fetcher.fetch(
         url: Uri.parse(subscription.url),
@@ -150,7 +150,7 @@ class SubscriptionManager {
         cancellation: token,
       );
       final parsed = await Isolate.run(
-          () => parseSubscriptionContent(body, subscriptionId: id));
+          () => parseSubscriptionContent(body, subscriptionId: id),);
       await _profiles.replaceSubscriptionProfiles(id, parsed.profiles);
       await _cacheDir.create(recursive: true);
       await _cacheFile(id).writeAsString(body);
@@ -164,18 +164,18 @@ class SubscriptionManager {
         profileCount: parsed.profiles.length,
       );
       _log.info('subscriptions',
-          'Refresh OK: ${parsed.profiles.length} profiles (${parsed.errors.length} skipped)');
+          'Refresh OK: ${parsed.profiles.length} profiles (${parsed.errors.length} skipped)',);
       return true;
     } on FetchCancelledException {
       _setStatus(id,
-          lastStatus: SubscriptionStatus.idle, lastError: 'cancelled');
+          lastStatus: SubscriptionStatus.idle, lastError: 'cancelled',);
       return false;
     } on Object catch (e) {
       // Last-good profiles stay untouched in the repository.
       _setStatus(id,
-          lastStatus: SubscriptionStatus.error, lastError: e.toString());
+          lastStatus: SubscriptionStatus.error, lastError: e.toString(),);
       _log.warning('subscriptions', 'Refresh failed, kept last-good profiles',
-          error: e);
+          error: e,);
       return false;
     } finally {
       _inflight.remove(id);
@@ -197,7 +197,7 @@ class SubscriptionManager {
     required String lastError,
     DateTime? lastUpdatedAt,
     int? profileCount,
-  }) {
+  },) {
     final index = _subscriptions.indexWhere((s) => s.id == id);
     if (index < 0) return;
     final current = _subscriptions[index];

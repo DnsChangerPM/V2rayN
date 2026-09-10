@@ -39,7 +39,7 @@ void main() {
     temp = await Directory.systemTemp.createTemp('sub-manager-test-');
     log = LogService(
         logDir: Directory('${temp.path}/logs'),
-        minLevel: LogLevel.error);
+        minLevel: LogLevel.error,);
   });
 
   tearDown(() async {
@@ -49,7 +49,7 @@ void main() {
 
   ProfileRepository _profiles() => ProfileRepository(
         store: JsonStore(
-            file: File('${temp.path}/profiles.json'), schemaVersion: 1),
+            file: File('${temp.path}/profiles.json'), schemaVersion: 1,),
         newId: () => 'p-${counter++}',
         log: log,
       );
@@ -57,7 +57,7 @@ void main() {
   SubscriptionManager _manager(ProfileRepository profiles, _FakeClient client) =>
       SubscriptionManager(
         store: JsonStore(
-            file: File('${temp.path}/subs.json'), schemaVersion: 1),
+            file: File('${temp.path}/subs.json'), schemaVersion: 1,),
         cacheDir: Directory('${temp.path}/cache'),
         profiles: profiles,
         fetcher: SubscriptionFetcher(log: log, client: client),
@@ -73,11 +73,11 @@ void main() {
         _manager(profiles, _FakeClient(body: base64Encode(utf8.encode('$link\n'))));
     await manager.load();
     final sub = await manager.add(
-        name: 'test', url: 'https://example.com/sub');
+        name: 'test', url: 'https://example.com/sub',);
     final ok = await manager.refresh(sub.id);
     expect(ok, isTrue);
     expect(manager.subscriptions.single.lastStatus,
-        SubscriptionStatus.ok);
+        SubscriptionStatus.ok,);
     expect(profiles.profiles.map((p) => p.name), ['SubNode']);
     expect(profiles.profiles.single.subscriptionId, sub.id);
   });
@@ -89,11 +89,11 @@ void main() {
         _manager(profiles, _FakeClient(statusCode: 500, body: 'oops'));
     await manager.load();
     final sub = await manager.add(
-        name: 'test', url: 'https://example.com/sub');
+        name: 'test', url: 'https://example.com/sub',);
     final ok = await manager.refresh(sub.id);
     expect(ok, isFalse);
     expect(manager.subscriptions.single.lastStatus,
-        SubscriptionStatus.error);
+        SubscriptionStatus.error,);
     expect(manager.subscriptions.single.lastError, isNotEmpty);
     expect(profiles.profiles, isEmpty);
   });
@@ -104,6 +104,6 @@ void main() {
     final manager = _manager(profiles, _FakeClient());
     await manager.load();
     expect(() => manager.add(name: 'x', url: 'not-a-url'),
-        throwsArgumentError);
+        throwsArgumentError,);
   });
 }

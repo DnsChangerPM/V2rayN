@@ -38,7 +38,7 @@ abstract final class SecureVaultFactory {
     required File vaultFile,
     required File keyFile,
     required LogService log,
-  }) async {
+  },) async {
     if (Platform.isWindows) {
       try {
         final vault = DpapiVault(vaultFile);
@@ -47,7 +47,7 @@ abstract final class SecureVaultFactory {
         return vault;
       } on Object catch (e) {
         log.warning('vault',
-            'DPAPI unavailable, falling back to AES file vault', error: e);
+            'DPAPI unavailable, falling back to AES file vault', error: e,);
       }
     }
     final vault = AesFileVault(vaultFile, keyFile);
@@ -141,12 +141,12 @@ class DpapiVault implements SecureVault {
         ..cbData = plain.length
         ..pbData = inData;
       final ok = CryptProtectData(inBlob, nullptr, nullptr, nullptr, nullptr,
-          _cryptProtectUiForbidden, outBlob);
+          _cryptProtectUiForbidden, outBlob,);
       if (ok == 0) {
         throw StateError('CryptProtectData failed (code=${GetLastError()})');
       }
       return Uint8List.fromList(
-          outBlob.ref.pbData.asTypedList(outBlob.ref.cbData));
+          outBlob.ref.pbData.asTypedList(outBlob.ref.cbData),);
     } finally {
       if (outBlob.ref.pbData != nullptr) {
         LocalFree(outBlob.ref.pbData);
@@ -167,13 +167,13 @@ class DpapiVault implements SecureVault {
         ..cbData = cipher.length
         ..pbData = inData;
       final ok = CryptUnprotectData(inBlob, nullptr, nullptr, nullptr,
-          nullptr, _cryptProtectUiForbidden, outBlob);
+          nullptr, _cryptProtectUiForbidden, outBlob,);
       if (ok == 0) {
         throw StateError(
-            'CryptUnprotectData failed (code=${GetLastError()})');
+            'CryptUnprotectData failed (code=${GetLastError()})',);
       }
       return Uint8List.fromList(
-          outBlob.ref.pbData.asTypedList(outBlob.ref.cbData));
+          outBlob.ref.pbData.asTypedList(outBlob.ref.cbData),);
     } finally {
       if (outBlob.ref.pbData != nullptr) {
         LocalFree(outBlob.ref.pbData);
@@ -233,7 +233,7 @@ class AesFileVault implements SecureVault {
     try {
       final decoded = json.decode(await file.readAsString());
       if (decoded is! Map<dynamic, dynamic>) return {};
-      return (decoded as Map<dynamic, dynamic>).cast<String, dynamic>();
+      return decoded.cast<String, dynamic>();
     } on Object {
       return {};
     }

@@ -12,7 +12,7 @@ void main() {
 
     test('redacts secret assignments', () {
       final out = LogSanitizer.sanitize(
-          '{"password": "hunter2", "token": "abc123", "port": 10808}');
+          '{"password": "hunter2", "token": "abc123", "port": 10808}',);
       expect(out, isNot(contains('hunter2')));
       expect(out, isNot(contains('abc123')));
       expect(out, contains('10808')); // non-secrets survive
@@ -20,7 +20,7 @@ void main() {
 
     test('redacts URI passwords and queries', () {
       final out = LogSanitizer.sanitize(
-          'fetch https://user:s3cret@example.com/sub?token=abc#frag done');
+          'fetch https://user:s3cret@example.com/sub?token=abc#frag done',);
       expect(out, isNot(contains('s3cret')));
       expect(out, isNot(contains('token=abc')));
       expect(out, contains('https://user:<redacted>@example.com/sub?<redacted>'));
@@ -47,7 +47,7 @@ void main() {
 
     test('multiline truncation', () {
       final out = LogSanitizer.sanitizeMultiline('short\n${'word ' * 600}',
-          maxLineLength: 100);
+          maxLineLength: 100,);
       expect(out.split('\n').length, 2);
       expect(out, contains('<truncated>'));
     });

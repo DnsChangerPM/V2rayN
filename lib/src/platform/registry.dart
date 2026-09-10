@@ -38,7 +38,7 @@ abstract final class WindowsRegistry {
     final result = calloc<IntPtr>();
     try {
       final code = RegOpenKeyEx(
-          hkeyCurrentUser, subKeyNative, 0, access, result);
+          hkeyCurrentUser, subKeyNative, 0, access, result,);
       if (code != ERROR_SUCCESS) {
         throw RegistryException('Cannot open HKCU\\$subKey', code: code);
       }
@@ -61,12 +61,12 @@ abstract final class WindowsRegistry {
       final size = calloc<Uint32>();
       try {
         var code = RegQueryValueEx(
-            hKey, nameNative, nullptr, type, nullptr, size);
+            hKey, nameNative, nullptr, type, nullptr, size,);
         if (code != ERROR_SUCCESS || size.value == 0) return null;
         final data = calloc<Uint8>(size.value);
         try {
           code = RegQueryValueEx(
-              hKey, nameNative, nullptr, type, data, size);
+              hKey, nameNative, nullptr, type, data, size,);
           if (code != ERROR_SUCCESS) return null;
           return data.cast<Utf16>().toDartString();
         } finally {
@@ -91,7 +91,7 @@ abstract final class WindowsRegistry {
       final size = calloc<Uint32>()..value = sizeOf<Uint32>();
       try {
         final code = RegQueryValueEx(
-            hKey, nameNative, nullptr, type, data.cast<Uint8>(), size);
+            hKey, nameNative, nullptr, type, data.cast<Uint8>(), size,);
         if (code != ERROR_SUCCESS) return null;
         return data.value;
       } finally {
@@ -113,10 +113,10 @@ abstract final class WindowsRegistry {
       try {
         final bytes = (value.length + 1) * 2;
         final code = RegSetValueEx(hKey, nameNative, 0, REG_SZ,
-            valueNative.cast<Uint8>(), bytes);
+            valueNative.cast<Uint8>(), bytes,);
         if (code != ERROR_SUCCESS) {
           throw RegistryException(
-              'Cannot write HKCU\\$subKey\\$valueName', code: code);
+              'Cannot write HKCU\\$subKey\\$valueName', code: code,);
         }
       } finally {
         free(nameNative);
@@ -134,10 +134,10 @@ abstract final class WindowsRegistry {
       final data = calloc<Uint32>()..value = value;
       try {
         final code = RegSetValueEx(hKey, nameNative, 0, REG_DWORD,
-            data.cast<Uint8>(), sizeOf<Uint32>());
+            data.cast<Uint8>(), sizeOf<Uint32>(),);
         if (code != ERROR_SUCCESS) {
           throw RegistryException(
-              'Cannot write HKCU\\$subKey\\$valueName', code: code);
+              'Cannot write HKCU\\$subKey\\$valueName', code: code,);
         }
       } finally {
         free(nameNative);

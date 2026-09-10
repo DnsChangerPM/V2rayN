@@ -1,22 +1,30 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:iranlink/app.dart';
 import 'package:iranlink/src/models/connection.dart';
 import 'package:iranlink/src/platform/app_paths.dart';
+import 'package:iranlink/src/state/connection_provider.dart';
 import 'package:iranlink/src/state/service_locator.dart';
+import 'package:provider/provider.dart';
 
 Future<AppServices> _boot() async {
   final temp = await Directory.systemTemp.createTemp('iranlink-widget-');
   addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
   return AppServices.create(
-      pathsOverride: AppPaths.custom(temp, portable: true));
+      pathsOverride: AppPaths.custom(temp, portable: true),);
 }
 
 Future<void> _pump(WidgetTester tester, AppServices services) async {
   await tester.pumpWidget(IranLinkApp(services: services));
   await tester.pumpAndSettle();
+}
+
+/// The [ConnectionProvider] owned by the pumped widget tree.
+ConnectionProvider _connectionOf(WidgetTester tester) {
+  final element = tester.element(find.text('CONNECT'));
+  return Provider.of<ConnectionProvider>(element, listen: false);
 }
 
 void main() {
@@ -31,8 +39,9 @@ void main() {
     expect(connect, findsOneWidget);
     await tester.tap(connect);
     await tester.pumpAndSettle();
-    expect(services.connection.state, ConnectionState.error);
-    expect(services.connection.failureKey, 'errorNoProfile');
+    final connection = _connectionOf(tester);
+    expect(connection.state, ConnectionState.error);
+    expect(connection.failureKey, 'errorNoProfile');
     expect(find.text('Select a profile first.'), findsWidgets);
   });
 

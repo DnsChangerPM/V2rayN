@@ -21,7 +21,7 @@ class ProfileProvider extends ChangeNotifier
     required BestProfileSelector selector,
     required SettingsRepository settings,
     required LogService log,
-  })  : _repository = repository,
+  },)  : _repository = repository,
         _importer = importer,
         _selector = selector,
         _settings = settings,

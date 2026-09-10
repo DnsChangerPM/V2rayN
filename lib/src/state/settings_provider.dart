@@ -15,7 +15,7 @@ class SettingsProvider extends ChangeNotifier {
     required SettingsRepository repository,
     required AutostartService autostart,
     required LogService log,
-  })  : _repository = repository,
+  },)  : _repository = repository,
         _autostart = autostart,
         _log = log {
     _subscription = _repository.changed.listen((_) => notifyListeners());
@@ -51,7 +51,7 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<void> applyNetworkPreset(NetworkPreset preset) => update(
-      (s) => s.copyWith(tuning: NetworkTuning.fromPreset(preset)));
+      (s) => s.copyWith(tuning: NetworkTuning.fromPreset(preset)),);
 
   @override
   void dispose() {

@@ -28,7 +28,7 @@ class XrayConfigBuilder {
   Map<String, dynamic> build({
     required ProxyProfile profile,
     required AppSettings settings,
-  }) {
+  },) {
     if (profile.protocol == ProxyProtocol.xrayJson) {
       return buildFromRawJson(
         rawJson: profile.rawJson ?? '{}',
@@ -53,12 +53,12 @@ class XrayConfigBuilder {
   Map<String, dynamic> buildFromRawJson({
     required String rawJson,
     required AppSettings settings,
-  }) {
+  },) {
     final decoded = json.decode(rawJson);
     if (decoded is! Map<dynamic, dynamic>) {
       throw const FormatException('Raw config must be a JSON object');
     }
-    final config = (decoded as Map<dynamic, dynamic>).cast<String, dynamic>();
+    final config = decoded.cast<String, dynamic>();
 
     final inbounds = _asMapList(config['inbounds']);
     for (final managed in _inbounds(settings)) {
@@ -75,7 +75,7 @@ class XrayConfigBuilder {
     final rules = _asMapList(routing['rules']);
     final hasApiRule = rules.any((r) =>
         _asStrings(r['inboundTag']).contains(XrayTags.api) &&
-        r['outboundTag'] == XrayTags.api);
+        r['outboundTag'] == XrayTags.api,);
     if (!hasApiRule) {
       rules.insert(0, {
         'type': 'field',
@@ -104,7 +104,7 @@ class XrayConfigBuilder {
           'auth': inbounds.socksAuth ? 'password' : 'noauth',
           if (inbounds.socksAuth)
             'accounts': [
-              {'user': inbounds.socksUsername, 'pass': ''}
+              {'user': inbounds.socksUsername, 'pass': ''},
             ],
           'udp': tuning.enableUdp,
           'ip': inbounds.bindAddress,
@@ -136,7 +136,7 @@ class XrayConfigBuilder {
   // -- outbounds -----------------------------------------------------------
 
   List<Map<String, dynamic>> _outbounds(
-      ProxyProfile profile, AppSettings settings) {
+      ProxyProfile profile, AppSettings settings,) {
     return [
       _proxyOutbound(profile, settings),
       {'tag': XrayTags.direct, 'protocol': 'freedom', 'settings': <String, dynamic>{}},
@@ -145,7 +145,7 @@ class XrayConfigBuilder {
   }
 
   Map<String, dynamic> _proxyOutbound(
-      ProxyProfile profile, AppSettings settings) {
+      ProxyProfile profile, AppSettings settings,) {
     final stream = _streamSettings(profile, settings);
     switch (profile.protocol) {
       case ProxyProtocol.vmess:
@@ -162,9 +162,9 @@ class XrayConfigBuilder {
                     'id': profile.secret,
                     'alterId': int.tryParse(profile.extra['aid'] ?? '0') ?? 0,
                     'security': profile.security.isEmpty ? 'auto' : profile.security,
-                  }
+                  },
                 ],
-              }
+              },
             ],
           },
           'streamSettings': stream,
@@ -183,9 +183,9 @@ class XrayConfigBuilder {
                     'id': profile.secret,
                     'encryption': profile.security.isEmpty ? 'none' : profile.security,
                     if (profile.flow.isNotEmpty) 'flow': profile.flow,
-                  }
+                  },
                 ],
-              }
+              },
             ],
           },
           'streamSettings': stream,
@@ -200,7 +200,7 @@ class XrayConfigBuilder {
                 'address': profile.address,
                 'port': profile.port,
                 'password': profile.secret,
-              }
+              },
             ],
           },
           'streamSettings': stream,
@@ -216,7 +216,7 @@ class XrayConfigBuilder {
                 'port': profile.port,
                 'method': profile.method,
                 'password': profile.secret,
-              }
+              },
             ],
           },
           'streamSettings': {'network': 'tcp'},
@@ -232,9 +232,9 @@ class XrayConfigBuilder {
                 'port': profile.port,
                 if (profile.username.isNotEmpty)
                   'users': [
-                    {'user': profile.username, 'pass': profile.secret}
+                    {'user': profile.username, 'pass': profile.secret},
                   ],
-              }
+              },
             ],
           },
           'streamSettings': {'network': 'tcp'},
@@ -250,9 +250,9 @@ class XrayConfigBuilder {
                 'port': profile.port,
                 if (profile.username.isNotEmpty)
                   'users': [
-                    {'user': profile.username, 'pass': profile.secret}
+                    {'user': profile.username, 'pass': profile.secret},
                   ],
-              }
+              },
             ],
           },
           'streamSettings': {'network': 'tcp'},
@@ -263,7 +263,7 @@ class XrayConfigBuilder {
   }
 
   Map<String, dynamic> _streamSettings(
-      ProxyProfile profile, AppSettings settings) {
+      ProxyProfile profile, AppSettings settings,) {
     final stream = <String, dynamic>{'network': _network(profile.transport)};
     final security =
         profile.tls == TlsMode.none ? 'none' : profile.tls.name;
@@ -328,7 +328,7 @@ class XrayConfigBuilder {
                 'path': [profile.path.isEmpty ? '/' : profile.path],
                 if (profile.host.isNotEmpty)
                   'headers': {
-                    'Host': [profile.host]
+                    'Host': [profile.host],
                   },
               },
             },
