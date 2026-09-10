@@ -89,6 +89,11 @@ jobs:
 
           "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "APP_VERSION=${{ inputs.version }}" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          # Exit explicitly with 0: the Actions pwsh wrapper appends
+          # "exit $LASTEXITCODE" to every script, and $LASTEXITCODE still holds
+          # git's deliberate "no matching refs" exit code 2 — without this line
+          # the step fails even though validation passed.
+          exit 0
 
       - name: Load pinned toolchain (tooling/versions.env)
         shell: pwsh

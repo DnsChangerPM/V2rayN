@@ -1,6 +1,5 @@
-# TEMPORARY debug workflow — reproduces the "Validate version input" failure
-# from run 34519856009 on a real windows-2022 runner. Findings are emitted as
-# error annotations so they can be read back through the API.
+# TEMPORARY debug workflow — final verification of the "Validate version input"
+# root cause and fix, using runner-invoked steps (same wrapper as release.yml).
 name: Debug validate
 
 on:
@@ -13,7 +12,7 @@ permissions:
 
 jobs:
   debug:
-    name: Reproduce validate failure (windows-2022)
+    name: Verify validate-step root cause + fix (windows-2022)
     runs-on: windows-2022
     timeout-minutes: 10
     steps:
@@ -22,10 +21,15 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Repro A (original script, tag missing)
+      # The ORIGINAL step from release.yml @ 28f8bfc, verbatim (version input
+      # substituted with 1.0.0, exactly like run 34519856009). Expected: fails
+      # with "Process completed with exit code 1" and no error output — because
+      # git ls-remote --exit-code returns 2 (tag missing = success case) and the
+      # runner wrapper appends "exit $LASTEXITCODE" (pwsh -Command normalizes
+      # non-0/1 exit codes to 1).
+      - name: ORIGINAL step verbatim (expected to fail with exit 1)
         shell: pwsh
         run: |
-          @'
           $ErrorActionPreference = 'Stop'
           python scripts/validate_version.py --version "1.0.0"
           $tag = "v1.0.0"
@@ -34,84 +38,32 @@ jobs:
             Write-Error "Tag $tag already exists on origin. Refusing to overwrite an existing release."
             exit 1
           }
-          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "APP_VERSION=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          '@ | Set-Content -Path repro-a.ps1 -Encoding utf8
+          "RELEASE_TAG_ORIG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "APP_VERSION_ORIG=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
-          $captured = & 'C:\Program Files\PowerShell\7\pwsh.exe' -NoProfile -command ". './repro-a.ps1'" *>&1 | ForEach-Object { "$_" }
-          "::error::REPRO-A-EXIT=$($LASTEXITCODE)"
-          $i = 0
-          foreach ($line in $captured) {
-            if ($i -lt 8) { "::error::REPRO-A-OUT[$i]= $line"; $i++ }
-          }
-
-      - name: Repro B (original script, ref exists -> guard must fire)
-        shell: pwsh
-        run: |
-          @'
-          $ErrorActionPreference = 'Stop'
-          python scripts/validate_version.py --version "1.0.0"
-          $tag = "arena/01a08cd2-v2rayn"
-          git ls-remote --exit-code origin "refs/heads/$tag" 2>$null
-          if ($LASTEXITCODE -eq 0) {
-            Write-Error "Tag $tag already exists on origin. Refusing to overwrite an existing release."
-            exit 1
-          }
-          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "APP_VERSION=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          '@ | Set-Content -Path repro-b.ps1 -Encoding utf8
-
-          $captured = & 'C:\Program Files\PowerShell\7\pwsh.exe' -NoProfile -command ". './repro-b.ps1'" *>&1 | ForEach-Object { "$_" }
-          "::error::REPRO-B-EXIT=$($LASTEXITCODE)"
-          $i = 0
-          foreach ($line in $captured) {
-            if ($i -lt 8) { "::error::REPRO-B-OUT[$i]= $line"; $i++ }
-          }
-
-      - name: Diagnose
-        shell: pwsh
-        run: |
-          "::error::PSVER=$($PSVersionTable.PSVersion) GIT=$(git --version)"
-          "::error::NCEAP=$PSNativeCommandUseErrorActionPreference"
-          $ErrorActionPreference = 'Stop'
-          try {
-            git ls-remote --exit-code --tags origin "refs/tags/v1.0.0" 2>$null
-            "::error::LSREM-STOP=no-throw exit=$LASTEXITCODE"
-          } catch {
-            $msg = ($_.Exception.Message -replace '\r?\n', ' / ')
-            "::error::LSREM-STOP=THREW $($_.Exception.GetType().Name) $msg"
-          }
-          try {
-            python -c "import sys; sys.stderr.write('STDERR-BOOM' + chr(10))" 2>$null
-            "::error::REDIR-STDERR-STOP=no-throw exit=$LASTEXITCODE"
-          } catch {
-            $msg = ($_.Exception.Message -replace '\r?\n', ' / ')
-            "::error::REDIR-STDERR-STOP=THREW $($_.Exception.GetType().Name) $msg"
-          }
-
-      - name: Test fixed logic (replacement for release.yml step)
+      # The FIXED step, exactly as it now exists in release.yml.
+      - name: FIXED step verbatim (expected to pass)
+        if: always()
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
           python scripts/validate_version.py --version "1.0.0"
+
           $tag = "v1.0.0"
           $ErrorActionPreference = 'Continue'
           $null = git ls-remote --exit-code --tags origin "refs/tags/$tag" 2>$null
           $lsExit = $LASTEXITCODE
           $ErrorActionPreference = 'Stop'
-          if ($lsExit -eq 0) { "::error::FIX-A=UNEXPECTED-EXISTS"; exit 1 }
-          if ($lsExit -ne 2) { "::error::FIX-A=GIT-ERROR exit=$lsExit"; exit 1 }
+
+          if ($lsExit -eq 0) {
+            Write-Error "Tag $tag already exists on origin. Refusing to overwrite an existing release."
+            exit 1
+          }
+          if ($lsExit -ne 2) {
+            Write-Error "git ls-remote failed with exit code $lsExit while checking tag $tag on origin (network or credentials problem)."
+            exit 1
+          }
+
           "RELEASE_TAG_FIX=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           "APP_VERSION_FIX=1.0.0" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          "::error::FIX-A=PASS lsExit=$lsExit"
-
-          $tag2 = "arena/01a08cd2-v2rayn"
-          $ErrorActionPreference = 'Continue'
-          $null = git ls-remote --exit-code origin "refs/heads/$tag2" 2>$null
-          $lsExit2 = $LASTEXITCODE
-          $ErrorActionPreference = 'Stop'
-          if ($lsExit2 -eq 0) {
-            "::error::FIX-B=EXISTING-REF-DETECTED correctly (lsExit=0, guard would fire)"
-          } else {
-            "::error::FIX-B=WRONG lsExit=$lsExit2 (expected 0)"; exit 1
-          }
+          exit 0

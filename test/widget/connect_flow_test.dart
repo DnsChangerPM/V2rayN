@@ -6,7 +6,6 @@ library;
 
 import 'dart:io';
 
-import 'package:flutter/material.dart' hide ConnectionState;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:iranlink/app.dart';
 import 'package:iranlink/src/models/connection.dart';

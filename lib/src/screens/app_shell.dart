@@ -119,7 +119,9 @@ class _StatusBar extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: theme.dividerColor)),
         // ignore: deprecated_member_use (withOpacity is correct on Flutter 3.19)
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
+        // surfaceContainerHighest needs Flutter 3.22; on the pinned 3.19
+        // toolchain the equivalent color role is surfaceVariant.
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
       ),
       child: Row(
         children: [
