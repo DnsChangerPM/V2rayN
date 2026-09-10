@@ -35,10 +35,13 @@ All notable changes to IranLink are documented here. The format is based on
   toolchain — Dart-3.7-only wildcard parameters `(_, _, _)`, the Flutter-3.22
   `ColorScheme.surfaceContainerHighest` API, `LogService.debug/info` calls
   passing an `error:` parameter the methods did not accept, a protobuf
-  `clone()` calling a non-existent unnamed constructor, and two unused
-  imports.
-- CI: analyze-failure annotations now report findings 10–18 as well
-  (previously only the first 9 were surfaced, hiding part of the list).
+  `clone()` calling a non-existent unnamed constructor, two unused imports,
+  an unused `_log` field on `ProfileProvider`, and two `showDialog` calls
+  missing explicit type arguments under strict-inference.
+- CI: analyze-failure annotations now report findings 10–18 as well, and the
+  error/warning grep actually matches `warning` lines (flutter analyze does
+  not pad `warning` with a leading space, so warnings were previously
+  invisible to the CI report even though they fail the build).
 
 ## [0.1.0] - TBD
 - First internal development snapshot (not released).

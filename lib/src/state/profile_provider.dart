@@ -5,7 +5,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import '../logging/log_service.dart';
 import '../models/profile.dart';
 import '../profiles/best_profile.dart';
 import '../profiles/profile_importer.dart';
@@ -19,12 +18,10 @@ class ProfileProvider extends ChangeNotifier
     required ProfileImporter importer,
     required BestProfileSelector selector,
     required SettingsRepository settings,
-    required LogService log,
   })  : _repository = repository,
         _importer = importer,
         _selector = selector,
-        _settings = settings,
-        _log = log {
+        _settings = settings {
     _repositorySubscription = _repository.changed.listen((_) {
       _refreshVisible();
     });
@@ -34,7 +31,6 @@ class ProfileProvider extends ChangeNotifier
   final ProfileImporter _importer;
   final BestProfileSelector _selector;
   final SettingsRepository _settings;
-  final LogService _log;
   late final StreamSubscription<void> _repositorySubscription;
 
   String _search = '';

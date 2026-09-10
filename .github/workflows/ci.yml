@@ -46,8 +46,8 @@ jobs:
           set +e
           flutter analyze --no-fatal-infos 2>&1 | tee analyze.log
           code=${PIPESTATUS[0]}
-          grep -E " error • | warning • " analyze.log > analyze-ew.log || true
-          grep -E " info • " analyze.log > analyze-info.log || true
+          grep -E "^[[:space:]]*(error|warning) • " analyze.log > analyze-ew.log || true
+          grep -E "^[[:space:]]*info • " analyze.log > analyze-info.log || true
           echo "ANALYZE_EXIT=$code" | tee -a "$GITHUB_ENV"
           echo "EW_COUNT=$(wc -l < analyze-ew.log)" | tee -a "$GITHUB_ENV"
           echo "INFO_COUNT=$(wc -l < analyze-info.log)" | tee -a "$GITHUB_ENV"

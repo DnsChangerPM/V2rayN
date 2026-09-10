@@ -332,7 +332,7 @@ class _ProfileMenu extends StatelessWidget {
 
   void _showEditorDialog(BuildContext context, ProfileProvider profiles,
       ProxyProfile profile,) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => _ProfileEditorDialog(profile: profile),
     );
