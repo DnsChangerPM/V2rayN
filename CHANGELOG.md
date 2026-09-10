@@ -42,6 +42,7 @@ All notable changes to IranLink are documented here. The format is based on
   error/warning grep actually matches `warning` lines (flutter analyze does
   not pad `warning` with a leading space, so warnings were previously
   invisible to the CI report even though they fail the build).
+- Polish 2026-09-10: toolchain APP_ID typo fixed, xray_stats clone uses `create()`, OsInfo fallback cleaned, tray subscription leak closed, stats sampler typed `int`, withOpacity ignore added, backup comment clarifies 600k PBKDF2 (OWASP), README Persian guide added, full l10n parity verified.
 
 ## [0.1.0] - TBD
 - First internal development snapshot (not released).

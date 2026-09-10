@@ -49,7 +49,7 @@ class Stat extends pb.GeneratedMessage {
   Stat createEmptyInstance() => create();
 
   @override
-  Stat clone() => Stat()..mergeFromMessage(this);
+  Stat clone() => create()..mergeFromMessage(this);
 
   String get name => $_getSZ(0);
   set name(String v) => $_setString(0, v);
@@ -90,7 +90,7 @@ class QueryStatsRequest extends pb.GeneratedMessage {
   QueryStatsRequest createEmptyInstance() => create();
 
   @override
-  QueryStatsRequest clone() => QueryStatsRequest()..mergeFromMessage(this);
+  QueryStatsRequest clone() => create()..mergeFromMessage(this);
 
   String get pattern => $_getSZ(0);
   set pattern(String v) => $_setString(0, v);
