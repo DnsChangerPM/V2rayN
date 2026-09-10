@@ -100,6 +100,7 @@ jobs:
           sed -n '46,54p' analyze-info.log | sed 's/^/::warning::ALZ6: /'
 
       - name: Unit + widget tests
+        timeout-minutes: 6
         run: |
           set +e
           # --timeout bounds each test in real time; without it a test that
