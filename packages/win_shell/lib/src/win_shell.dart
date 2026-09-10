@@ -524,7 +524,8 @@ class WinShell {
 
   /// Locale name of the current user, for example `fa-IR`.
   String getUserLocale() => using((arena) {
-        final buffer = arena<Utf16>(16);
+        // Utf16 has no known size, so allocate Uint16 units and cast.
+        final buffer = arena<Uint16>(16).cast<Utf16>();
         _load()?.getUserLocale(buffer, 16);
         return buffer.toDartString();
       });

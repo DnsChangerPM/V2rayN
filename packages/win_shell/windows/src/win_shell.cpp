@@ -809,9 +809,10 @@ WINSHELL_API void WinShellGetOsVersion(int *outMajor, int *outMinor,
     RtlGetVersionPtr rtlGetVersion = reinterpret_cast<RtlGetVersionPtr>(
         GetProcAddress(ntdll, "RtlGetVersion"));
     if (rtlGetVersion != nullptr) {
-      RTL_OSVERSIONINFOW info = {};
+      // RTL_OSVERSIONINFOEXW (not RTL_OSVERSIONINFOW) carries wProductType.
+      RTL_OSVERSIONINFOEXW info = {};
       info.dwOSVersionInfoSize = sizeof(info);
-      if (rtlGetVersion(&info) == 0) {
+      if (rtlGetVersion(reinterpret_cast<PRTL_OSVERSIONINFOW>(&info)) == 0) {
         major = static_cast<int>(info.dwMajorVersion);
         minor = static_cast<int>(info.dwMinorVersion);
         build = static_cast<int>(info.dwBuildNumber);
@@ -822,7 +823,10 @@ WINSHELL_API void WinShellGetOsVersion(int *outMajor, int *outMinor,
 
   if (major == 0) {
     // Fallback (deprecated but always available).
+#pragma warning(push)
+#pragma warning(disable : 4996)
     DWORD version = GetVersion();
+#pragma warning(pop)
     major = static_cast<int>(LOBYTE(LOWORD(version)));
     minor = static_cast<int>(HIBYTE(LOWORD(version)));
     build = static_cast<int>(HIWORD(version));
