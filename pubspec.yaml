@@ -38,7 +38,7 @@ dependencies:
   grpc: ^3.2.0 # Xray stats API client (pure Dart, h2c loopback)
   protobuf: ^3.1.0 # hand-written Xray stats messages (pure Dart)
   fixnum: ^1.1.0 # Int64 for stats messages (pure Dart)
-  uuid: ^4.3.0 # profile ids (pure Dart)
+  uuid: ^3.0.7 # profile ids (pure Dart; v3 line: system_tray 2.x needs uuid ^3.0.6)
   encrypt: ^5.0.0 # AES fallback encryption (pure Dart)
   crypto: ^3.0.0 # PBKDF2-HMAC-SHA256 for backups (pure Dart)
   zxing2: ^0.2.0 # QR decode from image files (pure Dart)
