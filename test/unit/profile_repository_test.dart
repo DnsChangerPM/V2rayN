@@ -32,7 +32,7 @@ void main() {
     await temp.delete(recursive: true);
   });
 
-  ProfileRepository _repo() => ProfileRepository(
+  ProfileRepository makeRepo() => ProfileRepository(
         store: JsonStore(
             file: File('${temp.path}/profiles.json'), schemaVersion: 1,),
         newId: () => 'gen-${counter++}',
@@ -40,7 +40,7 @@ void main() {
       );
 
   test('add/update/remove roundtrip with persistence', () async {
-    final repo = _repo();
+    final repo = makeRepo();
     await repo.load();
     expect(repo.profiles, isEmpty);
 
@@ -51,7 +51,7 @@ void main() {
     expect(repo.profiles.single.name, 'renamed');
 
     // Reload from disk.
-    final repo2 = _repo();
+    final repo2 = makeRepo();
     await repo2.load();
     expect(repo2.profiles.single.name, 'renamed');
 
@@ -60,7 +60,7 @@ void main() {
   });
 
   test('replaceSubscriptionProfiles swaps group atomically', () async {
-    final repo = _repo();
+    final repo = makeRepo();
     await repo.load();
     await repo.add(_profile('manual'));
     await repo.replaceSubscriptionProfiles('sub1', [
@@ -77,7 +77,7 @@ void main() {
   });
 
   test('query filters by text and favorite', () async {
-    final repo = _repo();
+    final repo = makeRepo();
     await repo.load();
     await repo.add(_profile('a').copyWith(isFavorite: true));
     await repo.add(_profile('b'));

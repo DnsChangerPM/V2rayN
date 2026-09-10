@@ -46,19 +46,28 @@ jobs:
           set +e
           flutter analyze --no-fatal-infos 2>&1 | tee analyze.log
           code=${PIPESTATUS[0]}
-          grep -E " error • | warning • " analyze.log > analyze-ew.log || true
-          grep -E " info • " analyze.log > analyze-info.log || true
+          grep -E "^[[:space:]]*(error|warning) • " analyze.log > analyze-ew.log || true
+          grep -E "^[[:space:]]*info • " analyze.log > analyze-info.log || true
           echo "ANALYZE_EXIT=$code" | tee -a "$GITHUB_ENV"
           echo "EW_COUNT=$(wc -l < analyze-ew.log)" | tee -a "$GITHUB_ENV"
           echo "INFO_COUNT=$(wc -l < analyze-info.log)" | tee -a "$GITHUB_ENV"
           tail -2 analyze.log
+          if [ "$code" -ne 0 ]; then
+            echo "::error::flutter analyze exited $code with EW=$(wc -l < analyze-ew.log) INFO=$(wc -l < analyze-info.log) — raw log tail follows"
+            tail -9 analyze.log | sed 's/^/::error::ANL: /'
+          fi
           exit "$code"
 
-      - name: Report analyze errors/warnings
+      - name: Report analyze errors/warnings (1-9)
         if: failure()
         run: |
           echo "::error::EW_COUNT=${{ env.EW_COUNT }} INFO_COUNT=${{ env.INFO_COUNT }}"
           head -9 analyze-ew.log | sed 's/^/::error::ALZ! /'
+
+      - name: Report analyze errors/warnings (10-18)
+        if: failure()
+        run: |
+          sed -n '10,18p' analyze-ew.log 2>/dev/null | sed 's/^/::error::ALZ9: /'
 
       - name: Report analyze infos 1-9
         if: failure()

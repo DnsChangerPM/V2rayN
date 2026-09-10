@@ -40,7 +40,6 @@ class IranLinkApp extends StatelessWidget {
             importer: services.importer,
             selector: services.selector,
             settings: services.settings,
-            log: services.log,
           )..refresh(),
         ),
         ChangeNotifierProvider(

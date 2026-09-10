@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/app_localizations.dart';
-import '../models/connection.dart';
 import '../state/connection_provider.dart';
 
 class ConnectButton extends StatelessWidget {
