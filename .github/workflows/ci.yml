@@ -31,12 +31,13 @@ jobs:
 
       - name: Install dependencies
         run: |
+          flutter config --no-analytics
           set +e
           flutter pub get 2>&1 | tee pub-get.log
           code=${PIPESTATUS[0]}
           if [ "$code" -ne 0 ]; then
             echo "::error::flutter pub get failed with exit $code"
-            grep -viE "^\s*$" pub-get.log | head -30 | sed 's/^/::error::PUB: /'
+            grep -viE "^\s*$" pub-get.log | tail -30 | sed 's/^/::error::PUB: /'
             exit "$code"
           fi
 
