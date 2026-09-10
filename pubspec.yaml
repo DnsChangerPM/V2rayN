@@ -1,0 +1,61 @@
+name: iranlink
+description: >-
+  IranLink — a production-grade Windows proxy client powered by Xray-core.
+  Modern UI, clean architecture, Windows 7 SP1 to Windows 11 compatibility target.
+publish_to: none
+
+# NOTE: version is propagated by CI from the release workflow input.
+# Do not bump manually for releases; see scripts/set_version.py.
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.3.0
+  flutter: ">=3.19.0 <3.20.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # ---------------------------------------------------------------------------
+  # Pinned-era dependencies (verified for Flutter 3.19 / Dart 3.3).
+  # `flutter pub get` resolves the newest version compatible with the SDK above.
+  # Every dependency was reviewed for: license, Windows support, Windows 7
+  # compatibility (no Win10-only APIs), pure-Dart where possible.
+  # See docs/windows-compatibility.md "Dependency matrix".
+  # ---------------------------------------------------------------------------
+  intl: 0.19.0 # must match flutter_localizations from Flutter 3.19
+  provider: ^6.1.0 # state management (no native code)
+  http: ^1.1.0 # subscriptions / update checks (pure Dart)
+  path: ^1.8.0 # path joins (pure Dart)
+  path_provider: ^2.1.0 # Windows known folders (Win7-safe APIs)
+  window_manager: ^0.3.7 # window controls (Win7-safe Win32)
+  system_tray: ^2.0.0 # system tray (Win7-safe Win32)
+  file_picker: ">=6.1.0 <9.0.0" # open/save dialogs (COM common dialogs)
+  win32: ^5.5.0 # registry, DPAPI, constants (FFI; only pre-Win7 APIs used)
+  ffi: ^2.1.0 # own bindings: wininet (system proxy), ntdll (OS version)
+  grpc: ^3.2.0 # Xray stats API client (pure Dart, h2c loopback)
+  protobuf: ^3.1.0 # hand-written Xray stats messages (pure Dart)
+  fixnum: ^1.1.0 # Int64 for stats messages (pure Dart)
+  uuid: ^4.3.0 # profile ids (pure Dart)
+  encrypt: ^5.0.0 # AES fallback encryption (pure Dart)
+  crypto: ^3.0.0 # PBKDF2-HMAC-SHA256 for backups (pure Dart)
+  zxing2: ^0.2.0 # QR decode from image files (pure Dart)
+  image: ^4.1.0 # image decode for QR import (pure Dart)
+  collection: ^1.18.0
+  meta: ^1.9.0
+  async: ^2.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^3.0.2 # last lints line supporting Dart 3.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/images/

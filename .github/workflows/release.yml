@@ -1,0 +1,231 @@
+# IranLink automated release pipeline.
+#
+# Trigger: Actions -> Release -> Run workflow (manual, versioned).
+# If any significant step fails, NO GitHub Release is created.
+#
+# Pinned inputs (see tooling/versions.env):
+#   Flutter 3.19.6, Xray XRAY_VERSION (+ .dgst verification), Inno Setup 6.2.2,
+#   runner windows-2022, actions pinned by commit SHA.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (strict SemVer MAJOR.MINOR.PATCH, e.g. 1.4.2)'
+        required: true
+        type: string
+      release_name:
+        description: 'Release title (defaults to "IranLink v<version>")'
+        required: false
+        type: string
+        default: ''
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        type: boolean
+        default: false
+      architecture:
+        description: 'Target architecture (x64 only in v1; pipeline is arch-parameterized)'
+        required: false
+        type: choice
+        options:
+          - x64
+        default: x64
+
+permissions:
+  contents: read
+
+concurrency:
+  group: iranlink-release
+  cancel-in-progress: false
+
+env:
+  APP_NAME: IranLink
+  ARCH: ${{ inputs.architecture }}
+  PYTHONUTF8: '1'
+
+jobs:
+  release:
+    name: Build & publish (${{ inputs.architecture }})
+    runs-on: windows-2022
+    permissions:
+      contents: write # only job allowed to create tags/releases
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      - name: Validate version input
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python scripts/validate_version.py --version "${{ inputs.version }}"
+          $tag = "v${{ inputs.version }}"
+          git ls-remote --exit-code --tags origin "refs/tags/$tag" 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Error "Tag $tag already exists on origin. Refusing to overwrite an existing release."
+            exit 1
+          }
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "APP_VERSION=${{ inputs.version }}" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Load pinned toolchain (tooling/versions.env)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Get-Content tooling/versions.env | ForEach-Object {
+            $line = $_.Trim()
+            if ($line -eq '' -or $line.StartsWith('#')) { return }
+            $kv = $line -split '=', 2
+            if ($kv.Count -ne 2) { Write-Error "Bad line in versions.env: $line"; exit 1 }
+            "$($kv[0])=$($kv[1])" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          }
+          if ('${{ inputs.architecture }}' -ne $env:ARCH -and '${{ inputs.architecture }}' -ne '') {
+            Write-Error 'Architecture mismatch'; exit 1
+          }
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.11'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Flutter doctor
+        shell: pwsh
+        run: flutter doctor -v
+
+      - name: Install dependencies
+        shell: pwsh
+        run: flutter pub get
+
+      - name: Stamp version everywhere
+        shell: pwsh
+        run: python scripts/set_version.py --version "${{ inputs.version }}"
+
+      - name: Verify version propagation
+        shell: pwsh
+        run: python scripts/check_version.py --version "${{ inputs.version }}"
+
+      - name: Analyze
+        shell: pwsh
+        run: flutter analyze --no-fatal-infos
+
+      - name: Security audit (no secrets, no banned patterns)
+        shell: pwsh
+        run: python scripts/security_audit.py
+
+      - name: Unit + widget tests
+        shell: pwsh
+        run: flutter test --reporter expanded
+
+      - name: Download Xray core (pinned, digest-verified)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $attempt = 0
+          while ($true) {
+            $attempt++
+            try {
+              python scripts/download_xray.py --xray-version "$env:XRAY_VERSION" --out third_party/xray
+              break
+            } catch {
+              if ($attempt -ge 3) { throw }
+              Write-Warning "Xray download attempt $attempt failed, retrying in 15s..."
+              Start-Sleep -Seconds 15
+            }
+          }
+
+      - name: Build Windows (release)
+        shell: pwsh
+        run: flutter build windows --release --verbose
+
+      - name: Stage bundle (core + geo data)
+        shell: pwsh
+        run: python scripts/stage_bundle.py --xray-dir third_party/xray --bundle build/windows/x64/runner/Release
+
+      - name: Install Inno Setup (pinned)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          choco install innosetup --version "$env:INNO_VERSION" -y --no-progress
+          $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $iscc)) { Write-Error "ISCC not found at $iscc"; exit 1 }
+          (Split-Path $iscc) | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force dist | Out-Null
+          ISCC.exe installer/iranlink.iss /DAppVersion="${{ inputs.version }}" /DSourceDir="$PWD\build\windows\x64\runner\Release" /O"$PWD\dist"
+
+      - name: Build portable ZIP
+        shell: pwsh
+        run: python scripts/make_portable.py --version "${{ inputs.version }}" --arch "${{ inputs.architecture }}" --source build/windows/x64/runner/Release --out dist/
+
+      - name: Generate SHA256SUMS
+        shell: pwsh
+        run: python scripts/make_checksums.py --dir dist/
+
+      - name: Verify artifacts
+        shell: pwsh
+        run: python scripts/verify_artifacts.py --version "${{ inputs.version }}" --arch "${{ inputs.architecture }}" --dir dist/ --bundle build/windows/x64/runner/Release
+
+      - name: Compatibility check (PE, metadata, bundled core)
+        shell: pwsh
+        run: python scripts/compat_check.py --version "${{ inputs.version }}" --bundle build/windows/x64/runner/Release --installer "dist/IranLink-${{ inputs.version }}-Windows-${{ inputs.architecture }}-Setup.exe"
+
+      - name: Integration test (real core lifecycle, debug build)
+        shell: pwsh
+        env:
+          IRANLINK_CORE_DIR: ${{ github.workspace }}\build\windows\x64\runner\Release\core
+        run: flutter test -d windows integration_test --reporter expanded
+
+      - name: Smoke test (headless launch + real core start)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & "$PWD\build\windows\x64\runner\Release\IranLink.exe" --smoke-test --smoke-timeout 120
+          if ($LASTEXITCODE -ne 0) { Write-Error 'Smoke test failed — aborting release.'; exit 1 }
+
+      - name: Generate release notes
+        shell: pwsh
+        run: python scripts/release_notes.py --version "${{ inputs.version }}" --xray-version "$env:XRAY_VERSION" --arch "${{ inputs.architecture }}" --out dist/RELEASE_NOTES.md
+
+      - name: Upload workflow artifacts (forensics)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: IranLink-${{ inputs.version }}-Windows-${{ inputs.architecture }}
+          path: |
+            dist/IranLink-*-Setup.exe
+            dist/IranLink-*-Portable.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = $env:RELEASE_TAG
+          $title = "${{ inputs.release_name }}"
+          if ([string]::IsNullOrWhiteSpace($title)) { $title = "IranLink $tag" }
+          $createArgs = @('release', 'create', $tag, '--title', $title, '--notes-file', 'dist/RELEASE_NOTES.md', '--target', $env:GITHUB_SHA)
+          if ('${{ inputs.prerelease }}' -eq 'true') { $createArgs += '--prerelease' } else { $createArgs += '--latest' }
+          $createArgs += @(
+            "dist/IranLink-${{ inputs.version }}-Windows-${{ inputs.architecture }}-Setup.exe",
+            "dist/IranLink-${{ inputs.version }}-Windows-${{ inputs.architecture }}-Portable.zip",
+            'dist/SHA256SUMS.txt'
+          )
+          gh @createArgs
