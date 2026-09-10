@@ -440,7 +440,7 @@ Future<void> _showImportDialog(BuildContext context) async {
   }
   if (!context.mounted) return;
   final profiles = context.read<ProfileProvider>();
-  await showDialog(
+  await showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(context.l10n('importText')),
