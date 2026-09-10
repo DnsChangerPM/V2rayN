@@ -114,12 +114,22 @@ jobs:
             exit "$code"
           fi
 
+      - name: Report test failures (details)
+        if: always()
+        run: |
+          if [ -f test.log ]; then
+            grep -B1 -A16 '\[E\]' test.log | grep -viE '^\s*$' | head -20 \
+              | sed 's/^/::error::TSTFAIL: /' || true
+            grep -E 'Some tests failed|All tests passed' test.log \
+              | sed 's/^/::error::TSTSUMMARY: /' || true
+          fi
+
       - name: Report test log (even on hang/timeout)
         if: always()
         run: |
           if [ -f test.log ]; then
-            echo "::warning::test.log tail (last 40 lines):"
-            grep -viE "^\s*$" test.log | tail -40 | sed 's/^/::warning::TSTLOG: /'
+            echo "::warning::last 10 test-progress lines:"
+            grep -E '^[0-9]{2}:[0-9]{2}' test.log | tail -10 | sed 's/^/::warning::TSTLOG: /'
           fi
 
       - name: Upload diagnostics logs
