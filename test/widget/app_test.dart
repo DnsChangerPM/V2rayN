@@ -9,11 +9,18 @@ import 'package:iranlink/src/state/connection_provider.dart';
 import 'package:iranlink/src/state/service_locator.dart';
 import 'package:provider/provider.dart';
 
-Future<AppServices> _boot() async {
-  final temp = await Directory.systemTemp.createTemp('iranlink-widget-');
-  addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
-  return AppServices.create(
-      pathsOverride: AppPaths.custom(temp, portable: true),);
+Future<AppServices> _boot(WidgetTester tester) async {
+  // The test body runs inside a FakeAsync zone: real-async completions
+  // (filesystem IO, service bootstrap) only resolve under runAsync, so all
+  // genuine IO for boot must happen here — awaiting it in the bare test body
+  // would deadlock the suite.
+  final services = await tester.runAsync<AppServices>(() async {
+    final temp = await Directory.systemTemp.createTemp('iranlink-widget-');
+    addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
+    return AppServices.create(
+        pathsOverride: AppPaths.custom(temp, portable: true),);
+  });
+  return services!;
 }
 
 Future<void> _pump(WidgetTester tester, AppServices services) async {
@@ -30,7 +37,7 @@ ConnectionProvider _connectionOf(WidgetTester tester) {
 void main() {
   testWidgets('boots to dashboard; connect without profile fails friendly',
       (tester) async {
-    final services = await _boot();
+    final services = await _boot(tester);
     addTearDown(services.dispose);
     await _pump(tester, services);
 
@@ -46,7 +53,7 @@ void main() {
   });
 
   testWidgets('navigates between pages', (tester) async {
-    final services = await _boot();
+    final services = await _boot(tester);
     addTearDown(services.dispose);
     await _pump(tester, services);
 
@@ -67,7 +74,7 @@ void main() {
   });
 
   testWidgets('settings toggle persists to service layer', (tester) async {
-    final services = await _boot();
+    final services = await _boot(tester);
     addTearDown(services.dispose);
     await _pump(tester, services);
 

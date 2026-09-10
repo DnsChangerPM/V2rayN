@@ -40,7 +40,7 @@ class SettingsRepository {
   Future<void> save(AppSettings settings) async {
     _settings = settings;
     await _store.write(settings.toJson());
-    _changed.add(settings);
+    if (!_changed.isClosed) _changed.add(settings);
   }
 
   Future<void> update(AppSettings Function(AppSettings) mutate) =>

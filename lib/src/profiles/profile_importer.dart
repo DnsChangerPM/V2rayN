@@ -76,13 +76,17 @@ class ProfileImporter {
       for (var i = 0; i < lines.length; i++) {
         final line = lines[i].trim();
         if (line.isEmpty) continue;
+        // Classify plain http(s) URLs without userinfo as subscription
+        // links BEFORE share-link parsing: parseShareLink also accepts bare
+        // http proxies, but a pasted bare http(s) URL is almost always a
+        // subscription source, not a node.
+        if (_looksLikeSubscriptionUrl(line)) {
+          subscriptionUrls.add(line);
+          continue;
+        }
         final profile = parseShareLink(line, newId: _repository.allocateId);
         if (profile != null) {
           profiles.add(profile.copyWith(groupId: groupId));
-          continue;
-        }
-        if (_looksLikeSubscriptionUrl(line)) {
-          subscriptionUrls.add(line);
           continue;
         }
         errors.add(ImportError(line: i + 1, reason: 'unrecognized link'));
@@ -123,7 +127,7 @@ class ProfileImporter {
   bool _looksLikeSubscriptionUrl(String line) {
     if (!isValidUrl(line)) return false;
     final uri = Uri.parse(line.trim());
-    // Proxy-form http(s) links carry userinfo and were handled above.
+    // http(s) links WITH userinfo are explicit proxy nodes, not feeds.
     return uri.userInfo.isEmpty;
   }
 

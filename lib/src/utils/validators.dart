@@ -42,7 +42,9 @@ bool isValidUrl(String value, {List<String> schemes = const ['http', 'https']}) 
 String maskUrl(String value) {
   final uri = Uri.tryParse(value.trim());
   if (uri == null || !uri.hasAuthority) return '<invalid-url>';
-  final hasSecret = uri.hasQuery || uri.hasFragment || uri.pathSegments.isNotEmpty;
+  // Any path (even a bare '/'), query, or fragment may hide something
+  // sensitive — mask all of it. Only scheme://host is safe to show.
+  final hasSecret = uri.hasQuery || uri.hasFragment || uri.path.isNotEmpty;
   final suffix = hasSecret ? '/•••' : '';
   final user = uri.userInfo.isEmpty ? '' : '${uri.userInfo.split(':').first}@';
   return '${uri.scheme}://$user${uri.host}$suffix';

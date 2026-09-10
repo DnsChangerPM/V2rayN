@@ -46,6 +46,11 @@ class SubscriptionManager {
   final Map<String, CancellationToken> _inflight = {};
   Timer? _autoRefreshTimer;
 
+  /// All store writes are serialized through this chain so concurrent
+  /// persists never interleave on the same file, and callers can `await`
+  /// the chain to know every state change has reached disk.
+  Future<void> _pendingWrite = Future<void>.value();
+
   Stream<void> get changed => _changed.stream;
   List<Subscription> get subscriptions => List.unmodifiable(_subscriptions);
 
@@ -74,11 +79,17 @@ class SubscriptionManager {
     return result;
   }
 
-  Future<void> _persist() async {
-    await _store.write({
-      'subscriptions': _subscriptions.map((s) => s.toJson()).toList(),
+  Future<void> _persist() {
+    final snapshot = _subscriptions.map((s) => s.toJson()).toList();
+    _pendingWrite = _pendingWrite.then((_) async {
+      await _store.write({'subscriptions': snapshot});
+      if (!_changed.isClosed) _changed.add(null);
+    }).catchError((Object e) {
+      // Persistence must never break the write chain or escape to callers
+      // that fire-and-forget; the next write still reflects full state.
+      _log.warning('subscriptions', 'Persist failed', error: e);
     });
-    _changed.add(null);
+    return _pendingWrite;
   }
 
   Subscription? findById(String id) {
@@ -179,6 +190,9 @@ class SubscriptionManager {
       return false;
     } finally {
       _inflight.remove(id);
+      // Await every queued persist so callers (and tests tearing down temp
+      // dirs) observe a fully-flushed state the moment refresh() returns.
+      await _pendingWrite;
     }
   }
 
@@ -238,6 +252,7 @@ class SubscriptionManager {
     for (final token in _inflight.values) {
       token.cancel();
     }
+    await _pendingWrite;
     await _changed.close();
   }
 }

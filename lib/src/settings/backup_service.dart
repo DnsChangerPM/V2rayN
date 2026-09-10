@@ -42,7 +42,12 @@ class BackupService {
       'exportedAt': DateTime.now().toIso8601String(),
       'includesSecrets': withSecrets,
       'settings': settings.toJson(),
-      'profiles': profiles.map((p) => p.toJson()).toList(),
+      // The plaintext body NEVER carries secrets. With a password they are
+      // sealed into the encrypted `secrets` envelope below; without one they
+      // are simply excluded (and `includesSecrets` says so).
+      'profiles': profiles
+          .map((p) => p.copyWith(secret: '', rawJson: null).toJson())
+          .toList(),
       'subscriptions': subscriptions
           .map((s) => s.copyWith(url: '').toJson())
           .toList(),
@@ -54,10 +59,6 @@ class BackupService {
         'rawJson': {for (final p in profiles) if (p.rawJson != null) p.id: p.rawJson},
       };
       envelope['secrets'] = _seal(json.encode(secrets), password);
-      // Strip plaintext secrets from the main body.
-      envelope['profiles'] = profiles
-          .map((p) => p.copyWith(secret: '', rawJson: null).toJson())
-          .toList();
     }
     await file.parent.create(recursive: true);
     await file.writeAsString(

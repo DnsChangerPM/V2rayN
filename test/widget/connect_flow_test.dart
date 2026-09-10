@@ -17,23 +17,30 @@ import 'package:provider/provider.dart';
 
 void main() {
   testWidgets('connect surfaces missing-core error honestly', (tester) async {
-    final temp =
-        await Directory.systemTemp.createTemp('iranlink-connect-');
-    addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
-    final services = await AppServices.create(
-        pathsOverride: AppPaths.custom(temp, portable: true),);
-    addTearDown(services.dispose);
+    // Boot + seed the real service graph under runAsync: the test body runs
+    // in a FakeAsync zone where real filesystem/IO completions never resolve,
+    // so awaiting them bare would deadlock the suite.
+    final booted = await tester.runAsync<AppServices>(() async {
+      final temp =
+          await Directory.systemTemp.createTemp('iranlink-connect-');
+      addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
+      final created = await AppServices.create(
+          pathsOverride: AppPaths.custom(temp, portable: true),);
 
-    final profile = await services.profiles.add(const ProxyProfile(
-      id: 'p1',
-      name: 'test node',
-      protocol: ProxyProtocol.vless,
-      address: '127.0.0.1',
-      port: 9,
-      secret: '123e4567-e89b-12d3-a456-426614174000',
-    ),);
-    await services.settings
-        .update((s) => s.copyWith(activeProfileId: profile.id));
+      final profile = await created.profiles.add(const ProxyProfile(
+        id: 'p1',
+        name: 'test node',
+        protocol: ProxyProtocol.vless,
+        address: '127.0.0.1',
+        port: 9,
+        secret: '123e4567-e89b-12d3-a456-426614174000',
+      ),);
+      await created.settings
+          .update((s) => s.copyWith(activeProfileId: profile.id));
+      return created;
+    });
+    final services = booted!;
+    addTearDown(services.dispose);
 
     await tester.pumpWidget(IranLinkApp(services: services));
     await tester.pumpAndSettle();
