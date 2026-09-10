@@ -42,10 +42,26 @@ jobs:
           fi
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: |
+          set +e
+          flutter analyze --no-fatal-infos 2>&1 | tee analyze.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            echo "::error::flutter analyze failed with exit $code"
+            grep -viE "^\s*$" analyze.log | tail -40 | sed 's/^/::error::ALZ: /'
+            exit "$code"
+          fi
 
       - name: Unit + widget tests
-        run: flutter test --reporter expanded
+        run: |
+          set +e
+          flutter test --reporter expanded 2>&1 | tee test.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" -ne 0 ]; then
+            echo "::error::flutter test failed with exit $code"
+            grep -viE "^\s*$" test.log | tail -40 | sed 's/^/::error::TST: /'
+            exit "$code"
+          fi
 
       - name: Validate helper scripts (compile + self-test)
         run: |
