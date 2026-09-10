@@ -4,7 +4,9 @@
 name: Debug validate
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - arena/01a08cd2-v2rayn
 
 permissions:
   contents: read
