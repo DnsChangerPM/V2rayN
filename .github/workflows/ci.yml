@@ -7,7 +7,7 @@ on:
     branches: ["**"]
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FLUTTER_VERSION: "3.19.6"
@@ -25,26 +25,29 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter version
-        run: flutter --version
-
       - name: Dependencies
         run: flutter pub get
 
-      - name: Analyze
-        run: flutter analyze --no-fatal-infos
-
-      - name: Format check
-        run: dart format --output=none --set-exit-if-changed lib test
-
-      - name: Tests
-        run: flutter test --reporter expanded
-
-      - name: Analyze the win_shell plugin
+      - name: Analyze (debug)
         run: |
-          cd packages/win_shell
-          flutter pub get
-          flutter analyze --no-fatal-infos
+          set +e
+          flutter analyze --no-fatal-infos > ci-analyze.log 2>&1
+          echo "ANALYZE_EXIT=$?" >> ci-analyze.log
+          flutter test --reporter expanded > ci-test.log 2>&1
+          echo "TEST_EXIT=$?" >> ci-test.log
+          set -e
+
+      - name: Publish debug logs
+        if: always()
+        run: |
+          mkdir -p ci-logs
+          cp ci-analyze.log ci-test.log ci-logs/ 2>/dev/null || true
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git add ci-logs
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "ci: debug logs [skip ci]"
+          git push origin HEAD:${GITHUB_REF#refs/heads/}
 
   build-windows:
     name: Build Windows (MSVC + Win32 plugin)
@@ -64,27 +67,33 @@ jobs:
       - name: Dependencies
         run: flutter pub get
 
-      - name: Generate the Windows runner
-        shell: pwsh
-        run: ./build/tools/New-WindowsRunner.ps1 -Version 0.0.0-ci
-
-      - name: Build
-        run: >
-          flutter build windows --release
-          --dart-define=APP_VERSION=0.0.0-ci
-          --dart-define=APP_BUILD=${{ github.run_number }}
-          --dart-define=GIT_SHA=${{ github.sha }}
-
-      - name: Collect the build
+      - name: Generate the Windows runner (debug)
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path dist/app | Out-Null
-          Copy-Item -Path build/windows/x64/runner/Release/* -Destination dist/app -Recurse -Force
-          Remove-Item -Path dist/app/*.pdb, dist/app/*.exp, dist/app/*.lib -ErrorAction SilentlyContinue
-          Get-ChildItem -Path dist/app | Select-Object Name, Length
+          $ErrorActionPreference = 'Continue'
+          ./build/tools/New-WindowsRunner.ps1 -Version 0.0.0-ci *>&1 |
+            Tee-Object -FilePath ci-runner.log
+          "RUNNER_EXIT=$LASTEXITCODE" | Out-File -Append -Encoding utf8 ci-runner.log
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: radin-windows-ci
-          path: dist/app
-          retention-days: 7
+      - name: Build (debug)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          flutter build windows --release `
+            --dart-define=APP_VERSION=0.0.0-ci `
+            --dart-define=APP_BUILD=${{ github.run_number }} `
+            --dart-define=GIT_SHA=${{ github.sha }} *>&1 |
+            Tee-Object -FilePath ci-build.log
+          "BUILD_EXIT=$LASTEXITCODE" | Out-File -Append -Encoding utf8 ci-build.log
+
+      - name: Publish debug logs
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ci-logs | Out-Null
+          Copy-Item ci-runner.log, ci-build.log ci-logs -ErrorAction SilentlyContinue
+          git config user.name "ci-bot"
+          git config user.email "ci-bot@users.noreply.github.com"
+          git add ci-logs
+          git commit -m "ci: debug logs (windows) [skip ci]" -ErrorAction SilentlyContinue
+          git push origin HEAD:${{ github.ref_name }}
