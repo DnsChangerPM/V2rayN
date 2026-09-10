@@ -136,10 +136,17 @@ Future<void> _toggleFromTray(AppServices services,
 class _BridgeConnection extends ChangeNotifier
     implements TrayConnectionSource {
   _BridgeConnection(this.services) {
-    services.core.statusStream.listen((_) => notifyListeners());
+    _subscription = services.core.statusStream.listen((_) => notifyListeners());
   }
 
   final AppServices services;
+  late final StreamSubscription<CoreStatus> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
 
   @override
   ConnectionState get state => switch (services.core.status) {

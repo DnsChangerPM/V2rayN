@@ -97,3 +97,12 @@ python scripts/stage_bundle.py --xray-dir third_party/xray --bundle build/window
 
 MIT — see [LICENSE](LICENSE). IranLink is an independent implementation; it
 shares no code with other clients.
+
+
+## 🇮🇷 راهنمای فارسی
+
+- نصب: فایل `IranLink-*.Setup.exe` را دانلود و اجرا کنید (بدون نیاز به دسترسی Admin).
+- افزودن پروفایل: `Profiles → Import` و لینک اشتراک یا `vmess/vless/trojan/ss` را وارد کنید.
+- اتصال: در داشبورد `CONNECT` را بزنید؛ برای قطع `DISCONNECT`.
+- حالت پرتابل: پوشه را اکسترکت و `IranLink.exe` را اجرا کنید؛ داده‌ها در `Data/` ذخیره می‌شود.
+- عیب‌یابی: `Diagnostics → Export` لاگ‌های پاک‌سازی‌شده را می‌سازد.

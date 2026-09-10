@@ -68,7 +68,6 @@ class OsInfo {
   }
 
   static OsInfo _detect() {
-    const distro = '';
     if (!Platform.isWindows) {
       return OsInfo(
         isWindows: false,
@@ -94,7 +93,7 @@ class OsInfo {
       major: parsed?.$1 ?? 10,
       minor: parsed?.$2 ?? 0,
       build: parsed?.$3 ?? 0,
-      distro: '$distro${Platform.operatingSystemVersion}',
+      distro: Platform.operatingSystemVersion,
     );
   }
 

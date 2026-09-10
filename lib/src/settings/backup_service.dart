@@ -163,6 +163,7 @@ class BackupService {
     );
   }
 
+  /// PBKDF2-HMAC-SHA256 with 600 000 iterations (OWASP 2023, par. 5.2).
   Uint8List _pbkdf2(List<int> password, List<int> salt,
       {int iterations = 600000, int length = 32,}) {
     var block = Uint8List(0);

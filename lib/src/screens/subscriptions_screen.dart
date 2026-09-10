@@ -213,6 +213,7 @@ class _StatusChip extends StatelessWidget {
       height: 28,
       alignment: Alignment.center,
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use (withOpacity is correct on Flutter 3.19)
         color: color.withOpacity(0.15),
         shape: BoxShape.circle,
       ),

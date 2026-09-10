@@ -477,8 +477,8 @@ class CoreManager {
         return;
       }
       final now = DateTime.now();
-      var upSpeed = 0;
-      var downSpeed = 0;
+      int upSpeed = 0;
+      int downSpeed = 0;
       if (_lastSampleAt != null) {
         final dt = now.difference(_lastSampleAt!).inMilliseconds / 1000;
         if (dt > 0) {
