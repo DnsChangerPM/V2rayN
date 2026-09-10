@@ -23,7 +23,7 @@ class ConnectionProvider extends ChangeNotifier
     required SettingsRepository settings,
     required ProfileRepository profiles,
     required LogService log,
-  },)  : _core = core,
+  })  : _core = core,
         _systemProxy = systemProxy,
         _settings = settings,
         _profiles = profiles,
@@ -49,6 +49,7 @@ class ConnectionProvider extends ChangeNotifier
   String _failureKey = '';
   AppFailure? _failure;
 
+  @override
   ConnectionState get state => _state;
   TrafficStats get traffic => _traffic;
   String get failureKey => _failureKey;
@@ -56,10 +57,12 @@ class ConnectionProvider extends ChangeNotifier
   CoreStatus get coreStatus => _core.status;
   String get coreVersion => _core.coreVersion;
 
+  @override
   ProxyProfile? get activeProfile =>
       _profiles.findById(_settings.current.activeProfileId);
 
   bool get isConnected => _state == ConnectionState.connected;
+  @override
   bool get isBusy =>
       _state == ConnectionState.connecting ||
       _state == ConnectionState.disconnecting;

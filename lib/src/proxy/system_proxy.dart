@@ -22,7 +22,7 @@ class SystemProxyState {
     required this.enabled,
     required this.server,
     required this.bypass,
-  },);
+  });
 
   final bool enabled;
   final String server;
@@ -64,7 +64,7 @@ class SystemProxyService {
   Future<void> enable({
     required String server,
     String bypass = 'localhost;127.*',
-  },) async {
+  }) async {
     final before = current();
     if (!_owned) _previous = before;
     WindowsRegistry.writeDword(internetSettingsKey, 'ProxyEnable', 1);

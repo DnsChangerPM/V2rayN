@@ -10,7 +10,7 @@ class StatCard extends StatelessWidget {
     required this.value,
     this.icon,
     this.valueDirection = TextDirection.ltr,
-  },);
+  });
 
   final String label;
   final String value;

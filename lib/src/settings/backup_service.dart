@@ -34,7 +34,7 @@ class BackupService {
     required List<ProxyProfile> profiles,
     required List<Subscription> subscriptions,
     String password = '',
-  },) async {
+  }) async {
     final withSecrets = password.isNotEmpty;
     final envelope = <String, dynamic>{
       'app': 'IranLink',
@@ -71,7 +71,7 @@ class BackupService {
     if (decoded is! Map<dynamic, dynamic>) {
       throw const FormatException('Not an IranLink backup file');
     }
-    final envelope = (decoded as Map<dynamic, dynamic>).cast<String, dynamic>();
+    final envelope = decoded.cast<String, dynamic>();
     if (envelope['app'] != 'IranLink') {
       throw const FormatException('Not an IranLink backup file');
     }
@@ -164,16 +164,16 @@ class BackupService {
   }
 
   Uint8List _pbkdf2(List<int> password, List<int> salt,
-      {int iterations = 600000, int length = 32},) {
+      {int iterations = 600000, int length = 32,}) {
     var block = Uint8List(0);
-    var result = <int>[];
+    final result = <int>[];
     var counter = 1;
     while (result.length < length) {
       final hmac = Hmac(sha256, password);
       var u = hmac
           .convert([...salt, ..._int32be(counter)])
           .bytes;
-      var xor = List<int>.from(u);
+      final xor = List<int>.from(u);
       for (var i = 1; i < iterations; i++) {
         u = hmac.convert(u).bytes;
         for (var j = 0; j < xor.length; j++) {
@@ -200,7 +200,7 @@ class BackupData {
     required this.settings,
     required this.profiles,
     required this.subscriptions,
-  },);
+  });
 
   final AppSettings settings;
   final List<ProxyProfile> profiles;

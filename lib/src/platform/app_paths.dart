@@ -69,7 +69,7 @@ class AppPaths {
       subscriptionsDir,
       logsDir,
       coreDir,
-      cacheDir
+      cacheDir,
     ]) {
       await dir.create(recursive: true);
     }

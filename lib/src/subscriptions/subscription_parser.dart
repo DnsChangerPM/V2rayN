@@ -38,7 +38,7 @@ ParsedSubscription parseSubscriptionContent(
   String content, {
   required String subscriptionId,
   String fallbackNamePrefix = 'profile',
-},) {
+}) {
   if (content.length > kMaxSubscriptionBytes) {
     throw const SubscriptionTooLargeException();
   }

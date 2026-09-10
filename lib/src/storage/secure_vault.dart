@@ -38,7 +38,7 @@ abstract final class SecureVaultFactory {
     required File vaultFile,
     required File keyFile,
     required LogService log,
-  },) async {
+  }) async {
     if (Platform.isWindows) {
       try {
         final vault = DpapiVault(vaultFile);

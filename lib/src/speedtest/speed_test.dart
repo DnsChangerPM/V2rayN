@@ -23,7 +23,7 @@ class SpeedTestResult {
     this.downloadKbps,
     this.uploadKbps,
     this.detail = '',
-  },);
+  });
 
   final int? serverPingMs;
   final int? chainLatencyMs;
@@ -45,7 +45,7 @@ class SpeedTestService {
     required ProxyProfile profile,
     required AppSettings settings,
     bool includeThroughput = true,
-  },) async {
+  }) async {
     _log.info('speedtest', 'Starting speed test for ${profile.name}');
     final connectivity = ConnectivityService(log: _log);
     final ping = await connectivity.probeTcp(profile.address, profile.port);

@@ -32,7 +32,7 @@ class TrayCallbacks {
     required this.onOpenSettings,
     required this.onQuit,
     required this.localize,
-  },);
+  });
 
   final Future<void> Function() onShowWindow;
   final Future<void> Function() onToggleConnection;
@@ -47,7 +47,7 @@ class TrayService {
     required AppPaths paths,
     required LogService log,
     required TrayCallbacks callbacks,
-  },)  : _connection = connection,
+  })  : _connection = connection,
         _paths = paths,
         _log = log,
         _callbacks = callbacks;

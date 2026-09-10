@@ -2,7 +2,6 @@
 library;
 
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 
@@ -21,7 +20,7 @@ class ProfileProvider extends ChangeNotifier
     required BestProfileSelector selector,
     required SettingsRepository settings,
     required LogService log,
-  },)  : _repository = repository,
+  })  : _repository = repository,
         _importer = importer,
         _selector = selector,
         _settings = settings,

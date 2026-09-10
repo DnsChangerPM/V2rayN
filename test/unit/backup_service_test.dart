@@ -8,6 +8,26 @@ import 'package:iranlink/src/models/settings.dart';
 import 'package:iranlink/src/models/subscription.dart';
 import 'package:iranlink/src/settings/backup_service.dart';
 
+AppSettings get settings => const AppSettings();
+List<ProxyProfile> get profiles => [
+      const ProxyProfile(
+        id: 'p1',
+        name: 'node',
+        protocol: ProxyProtocol.vless,
+        address: 'example.com',
+        port: 443,
+        secret: 'TOPSECRET',
+      ),
+    ];
+List<Subscription> get subscriptions => [
+      Subscription(
+        id: 's1',
+        name: 'sub',
+        url: 'https://example.com/sub?token=abc',
+        createdAt: DateTime.utc(2026, 1, 1),
+      ),
+    ];
+
 void main() {
   late Directory temp;
   late LogService log;
@@ -23,26 +43,6 @@ void main() {
     await log.dispose();
     await temp.delete(recursive: true);
   });
-
-  AppSettings get settings => const AppSettings();
-  List<ProxyProfile> get profiles => [
-        const ProxyProfile(
-          id: 'p1',
-          name: 'node',
-          protocol: ProxyProtocol.vless,
-          address: 'example.com',
-          port: 443,
-          secret: 'TOPSECRET',
-        ),
-      ];
-  List<Subscription> get subscriptions => [
-        Subscription(
-          id: 's1',
-          name: 'sub',
-          url: 'https://example.com/sub?token=abc',
-          createdAt: DateTime.utc(2026, 1, 1),
-        ),
-      ];
 
   BackupService service() => BackupService(log: log);
 

@@ -24,7 +24,7 @@ class ProfileScore {
     this.chainLatencyMs,
     this.jitterMs,
     this.detail = '',
-  },);
+  });
 
   final ProxyProfile profile;
   final bool reachable;
@@ -47,7 +47,7 @@ class BestProfileSelector {
     required ConnectivityService connectivity,
     required ProfileRepositoryPort repository,
     required LogService log,
-  },)  : _probe = probe,
+  })  : _probe = probe,
         _connectivity = connectivity,
         _repository = repository,
         _log = log;
@@ -67,7 +67,7 @@ class BestProfileSelector {
     int fastConcurrency = 5,
     int chainConcurrency = 2,
     int chainSamples = 2,
-  },) async {
+  }) async {
     _cancelled = false;
     _log.info('best', 'Ranking ${candidates.length} profiles');
 
@@ -162,7 +162,7 @@ class BestProfileSelector {
     }
 
     await Future.wait(
-        [for (var i = 0; i < concurrency; i++) worker()]);
+        [for (var i = 0; i < concurrency; i++) worker()],);
     return results.cast<R>();
   }
 }

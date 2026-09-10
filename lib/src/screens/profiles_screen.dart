@@ -155,7 +155,7 @@ class _GroupBar extends StatelessWidget {
               BuiltinGroups.work => 'groupWork',
               BuiltinGroups.personal => 'groupPersonal',
               _ => 'allGroups',
-            },)
+            })
           : group.name;
       chips.add(_groupChip(context, group.id, label));
     }
@@ -518,7 +518,7 @@ Future<void> _showImportDialog(BuildContext context) async {
 }
 
 void _showImportSummary(BuildContext context,
-    {required int imported, required int errors},) {
+    {required int imported, required int errors,}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(

@@ -39,7 +39,7 @@ abstract final class WindowsRegistry {
     try {
       final code = RegOpenKeyEx(
           hkeyCurrentUser, subKeyNative, 0, access, result,);
-      if (code != ERROR_SUCCESS) {
+      if (code != WIN32_ERROR.ERROR_SUCCESS) {
         throw RegistryException('Cannot open HKCU\\$subKey', code: code);
       }
       return result.value;
@@ -54,7 +54,7 @@ abstract final class WindowsRegistry {
   }
 
   static String? readString(String subKey, String valueName) {
-    final hKey = _open(subKey, KEY_QUERY_VALUE);
+    final hKey = _open(subKey, REG_SAM_FLAGS.KEY_QUERY_VALUE);
     try {
       final nameNative = valueName.toNativeUtf16();
       final type = calloc<Uint32>();
@@ -62,12 +62,12 @@ abstract final class WindowsRegistry {
       try {
         var code = RegQueryValueEx(
             hKey, nameNative, nullptr, type, nullptr, size,);
-        if (code != ERROR_SUCCESS || size.value == 0) return null;
+        if (code != WIN32_ERROR.ERROR_SUCCESS || size.value == 0) return null;
         final data = calloc<Uint8>(size.value);
         try {
           code = RegQueryValueEx(
               hKey, nameNative, nullptr, type, data, size,);
-          if (code != ERROR_SUCCESS) return null;
+          if (code != WIN32_ERROR.ERROR_SUCCESS) return null;
           return data.cast<Utf16>().toDartString();
         } finally {
           calloc.free(data);
@@ -83,7 +83,7 @@ abstract final class WindowsRegistry {
   }
 
   static int? readDword(String subKey, String valueName) {
-    final hKey = _open(subKey, KEY_QUERY_VALUE);
+    final hKey = _open(subKey, REG_SAM_FLAGS.KEY_QUERY_VALUE);
     try {
       final nameNative = valueName.toNativeUtf16();
       final type = calloc<Uint32>();
@@ -92,7 +92,7 @@ abstract final class WindowsRegistry {
       try {
         final code = RegQueryValueEx(
             hKey, nameNative, nullptr, type, data.cast<Uint8>(), size,);
-        if (code != ERROR_SUCCESS) return null;
+        if (code != WIN32_ERROR.ERROR_SUCCESS) return null;
         return data.value;
       } finally {
         free(nameNative);
@@ -106,15 +106,15 @@ abstract final class WindowsRegistry {
   }
 
   static void writeString(String subKey, String valueName, String value) {
-    final hKey = _open(subKey, KEY_SET_VALUE);
+    final hKey = _open(subKey, REG_SAM_FLAGS.KEY_SET_VALUE);
     try {
       final nameNative = valueName.toNativeUtf16();
       final valueNative = value.toNativeUtf16();
       try {
         final bytes = (value.length + 1) * 2;
-        final code = RegSetValueEx(hKey, nameNative, 0, REG_SZ,
+        final code = RegSetValueEx(hKey, nameNative, 0, REG_VALUE_TYPE.REG_SZ,
             valueNative.cast<Uint8>(), bytes,);
-        if (code != ERROR_SUCCESS) {
+        if (code != WIN32_ERROR.ERROR_SUCCESS) {
           throw RegistryException(
               'Cannot write HKCU\\$subKey\\$valueName', code: code,);
         }
@@ -128,14 +128,14 @@ abstract final class WindowsRegistry {
   }
 
   static void writeDword(String subKey, String valueName, int value) {
-    final hKey = _open(subKey, KEY_SET_VALUE);
+    final hKey = _open(subKey, REG_SAM_FLAGS.KEY_SET_VALUE);
     try {
       final nameNative = valueName.toNativeUtf16();
       final data = calloc<Uint32>()..value = value;
       try {
-        final code = RegSetValueEx(hKey, nameNative, 0, REG_DWORD,
+        final code = RegSetValueEx(hKey, nameNative, 0, REG_VALUE_TYPE.REG_DWORD,
             data.cast<Uint8>(), sizeOf<Uint32>(),);
-        if (code != ERROR_SUCCESS) {
+        if (code != WIN32_ERROR.ERROR_SUCCESS) {
           throw RegistryException(
               'Cannot write HKCU\\$subKey\\$valueName', code: code,);
         }
@@ -149,7 +149,7 @@ abstract final class WindowsRegistry {
   }
 
   static void deleteValue(String subKey, String valueName) {
-    final hKey = _open(subKey, KEY_SET_VALUE);
+    final hKey = _open(subKey, REG_SAM_FLAGS.KEY_SET_VALUE);
     try {
       final nameNative = valueName.toNativeUtf16();
       try {

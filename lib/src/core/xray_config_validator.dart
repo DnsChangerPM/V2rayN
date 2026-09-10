@@ -97,7 +97,7 @@ class XrayConfigValidator {
   }
 
   void _checkTag(Map<String, dynamic> block, Set<String> tags,
-      List<ConfigIssue> issues, {required bool isInbound},) {
+      List<ConfigIssue> issues, {required bool isInbound,}) {
     final tag = (block['tag'] ?? '').toString();
     final kind = isInbound ? 'inbound' : 'outbound';
     if (tag.isEmpty) {

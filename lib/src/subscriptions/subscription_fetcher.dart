@@ -53,7 +53,7 @@ class SubscriptionFetcher {
     Duration baseBackoff = const Duration(seconds: 1),
     bool allowInsecure = false,
     CancellationToken? cancellation,
-  },) async {
+  }) async {
     final random = Random();
     Object? lastError;
     for (var attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -90,7 +90,7 @@ class SubscriptionFetcher {
     required String userAgent,
     required Duration timeout,
     required bool allowInsecure,
-  },) async {
+  }) async {
     final client = _sharedClient ?? _createClient(allowInsecure: allowInsecure);
     final ownsClient = _sharedClient == null;
     try {

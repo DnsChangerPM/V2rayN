@@ -30,7 +30,7 @@ class XrayProcess implements CoreProcess {
 
   @override
   Future<int> terminateGracefully(
-      {Duration timeout = const Duration(seconds: 5)},) async {
+      {Duration timeout = const Duration(seconds: 5),}) async {
     _process.kill(ProcessSignal.sigterm);
     try {
       return await _process.exitCode.timeout(timeout);

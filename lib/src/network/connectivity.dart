@@ -28,7 +28,7 @@ class ConnectivityService {
     String host,
     int port, {
     Duration timeout = const Duration(seconds: 5),
-  },) async {
+  }) async {
     final stopwatch = Stopwatch()..start();
     try {
       final socket = await Socket.connect(host, port, timeout: timeout);
@@ -44,7 +44,7 @@ class ConnectivityService {
   Future<ProbeResult> probeSystemDns(
     String hostname, {
     Duration timeout = const Duration(seconds: 5),
-  },) async {
+  }) async {
     final stopwatch = Stopwatch()..start();
     try {
       final addresses = await InternetAddress.lookup(hostname)
@@ -67,7 +67,7 @@ class ConnectivityService {
     String hostname,
     String dnsServer, {
     Duration timeout = const Duration(seconds: 5),
-  },) async {
+  }) async {
     final stopwatch = Stopwatch()..start();
     try {
       final answers =
@@ -92,7 +92,7 @@ class ConnectivityService {
     String host,
     int port, {
     Duration timeout = const Duration(seconds: 5),
-  },) async {
+  }) async {
     final stopwatch = Stopwatch()..start();
     try {
       final socket = await Socket.connect(host, port, timeout: timeout);
@@ -126,7 +126,7 @@ abstract final class DnsQuery {
     String hostname,
     String server, {
     Duration timeout = const Duration(seconds: 5),
-  },) async {
+  }) async {
     final random = Random();
     final txId = random.nextInt(0xFFFF);
     final packet = _buildQuery(txId, hostname);
@@ -219,7 +219,7 @@ abstract final class Socks5Client {
     required String targetHost,
     required int targetPort,
     Duration timeout = const Duration(seconds: 8),
-  },) async {
+  }) async {
     final stopwatch = Stopwatch()..start();
     Socket? socket;
     try {
@@ -265,7 +265,7 @@ class ProfileProbeResult {
     required this.success,
     this.latencyMs,
     this.detail = '',
-  },);
+  });
 
   final bool success;
   final int? latencyMs;
@@ -280,7 +280,7 @@ class ProfileProbe {
     required LogService log,
     this.targetHost = '8.8.8.8',
     this.targetPort = 53,
-  },)  : _adapter = adapter,
+  })  : _adapter = adapter,
         _builder = builder,
         _executable = executable,
         _log = log;
@@ -298,7 +298,7 @@ class ProfileProbe {
     ProxyProfile profile,
     AppSettings settings, {
     Duration timeout = const Duration(seconds: 15),
-  },) async {
+  }) async {
     CoreProcess? process;
     Directory? sandbox;
     try {

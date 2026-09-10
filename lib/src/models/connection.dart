@@ -22,7 +22,7 @@ class TrafficStats {
     this.downloadSpeedBps = 0,
     this.uploadSpeedBps = 0,
     this.connectedAt,
-  },);
+  });
 
   final int downloadBytes;
   final int uploadBytes;
@@ -39,7 +39,7 @@ class TrafficStats {
     int? downloadSpeedBps,
     int? uploadSpeedBps,
     DateTime? connectedAt,
-  },) {
+  }) {
     return TrafficStats(
       downloadBytes: downloadBytes ?? this.downloadBytes,
       uploadBytes: uploadBytes ?? this.uploadBytes,
@@ -58,7 +58,7 @@ class AppFailure {
     this.details = '',
     this.port,
     this.pid,
-  },);
+  });
 
   final String messageKey;
   final String details;
@@ -77,7 +77,7 @@ class ProbeResult {
     required this.success,
     this.latencyMs,
     this.detail = '',
-  },);
+  });
 
   final String name;
   final bool success;

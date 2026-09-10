@@ -13,7 +13,7 @@ class ProfileRepository implements ProfileRepositoryPort {
     required JsonStore store,
     required String Function() newId,
     required LogService log,
-  },)  : _store = store,
+  })  : _store = store,
         _newId = newId,
         _log = log;
 
@@ -140,6 +140,7 @@ class ProfileRepository implements ProfileRepositoryPort {
     await update(profile.copyWith(groupId: groupId));
   }
 
+  @override
   Future<void> recordLatency(String id, int latencyMs) async {
     final profile = findById(id);
     if (profile == null) return;
@@ -222,7 +223,7 @@ class ProfileRepository implements ProfileRepositoryPort {
     String groupId = BuiltinGroups.all,
     ProfileSortKey sortKey = ProfileSortKey.name,
     SortDirection direction = SortDirection.ascending,
-  },) {
+  }) {
     Iterable<ProxyProfile> result = _profiles;
     if (groupId == BuiltinGroups.favorites) {
       result = result.where((p) => p.isFavorite);

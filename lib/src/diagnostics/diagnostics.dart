@@ -22,7 +22,7 @@ class PortDiagnostic {
     required this.port,
     required this.free,
     this.ownerPid,
-  },);
+  });
 
   final String label;
   final int port;
@@ -47,7 +47,7 @@ class DiagnosticsReport {
     required this.portableMode,
     required this.localAddresses,
     required this.probes,
-  },);
+  });
 
   final DateTime collectedAt;
   final String appVersion;
@@ -125,7 +125,7 @@ class DiagnosticsService {
     required OsInfo os,
     required ConnectivityService connectivity,
     required LogService log,
-  },)  : _core = core,
+  })  : _core = core,
         _systemProxy = systemProxy,
         _tun = tun,
         _vault = vault,
@@ -144,7 +144,7 @@ class DiagnosticsService {
   final LogService _log;
 
   Future<DiagnosticsReport> collect(AppSettings settings,
-      {bool runProbes = false},) async {
+      {bool runProbes = false,}) async {
     _log.info('diagnostics', 'Collecting report (probes=$runProbes)');
     final inbounds = settings.inbounds;
     final ports = <PortDiagnostic>[];

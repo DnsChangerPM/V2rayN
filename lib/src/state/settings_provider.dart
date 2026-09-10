@@ -15,7 +15,7 @@ class SettingsProvider extends ChangeNotifier {
     required SettingsRepository repository,
     required AutostartService autostart,
     required LogService log,
-  },)  : _repository = repository,
+  })  : _repository = repository,
         _autostart = autostart,
         _log = log {
     _subscription = _repository.changed.listen((_) => notifyListeners());

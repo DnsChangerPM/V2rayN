@@ -17,7 +17,7 @@ class JsonStore {
     required this.file,
     required this.schemaVersion,
     this.migrations = const {},
-  },);
+  });
 
   final File file;
   final int schemaVersion;

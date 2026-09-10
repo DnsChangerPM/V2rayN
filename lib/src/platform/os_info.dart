@@ -16,7 +16,7 @@ class OsInfo {
     required this.minor,
     required this.build,
     required this.distro,
-  },);
+  });
 
   final bool isWindows;
   final int major;

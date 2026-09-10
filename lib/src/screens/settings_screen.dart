@@ -197,7 +197,7 @@ class _DropdownRow<T> extends StatelessWidget {
     required this.items,
     required this.labelFor,
     required this.onChanged,
-  },);
+  });
 
   final String label;
   final T value;
@@ -235,7 +235,7 @@ class _PortRow extends StatefulWidget {
     required this.socksPort,
     required this.httpPort,
     required this.onSaved,
-  },);
+  });
 
   final int socksPort;
   final int httpPort;

@@ -10,7 +10,6 @@ import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
 import 'package:zxing2/qrcode.dart';
-import 'package:zxing2/zxing2.dart';
 
 import '../logging/log_service.dart';
 import '../models/profile.dart';
@@ -30,7 +29,7 @@ class ImportResult {
     required this.profiles,
     required this.errors,
     required this.subscriptionUrls,
-  },);
+  });
 
   final List<ProxyProfile> profiles;
   final List<ImportError> errors;
@@ -54,7 +53,7 @@ class ProfileImporter {
     String text, {
     String groupId = '',
     bool persist = true,
-  },) async {
+  }) async {
     final profiles = <ProxyProfile>[];
     final errors = <ImportError>[];
     final subscriptionUrls = <String>[];
@@ -108,7 +107,7 @@ class ProfileImporter {
     Uint8List bytes, {
     String groupId = '',
     bool persist = true,
-  },) async {
+  }) async {
     final payload = _decodeQr(bytes);
     if (payload == null || payload.trim().isEmpty) {
       _log.warning('import', 'QR decode produced no payload');

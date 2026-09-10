@@ -84,7 +84,7 @@ class ProxyProfile {
     this.createdAt,
     this.updatedAt,
     this.rawJson,
-  },);
+  });
 
   final String id;
   final String name;
@@ -160,7 +160,7 @@ class ProxyProfile {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? rawJson,
-  },) {
+  }) {
     return ProxyProfile(
       id: id ?? this.id,
       name: name ?? this.name,

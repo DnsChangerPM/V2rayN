@@ -9,7 +9,7 @@ class EmptyState extends StatelessWidget {
     required this.icon,
     required this.message,
     this.action,
-  },);
+  });
 
   final IconData icon;
   final String message;

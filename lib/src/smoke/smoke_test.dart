@@ -66,7 +66,7 @@ Future<void> _run() async {
         'core version probe (${services.core.coreVersion})',);
 
     // Hermetic test profile: local inbounds + discard outbound target.
-    final profile = ProxyProfile(
+    final profile = const ProxyProfile(
       id: 'smoke-profile',
       name: 'smoke',
       protocol: ProxyProtocol.socks,

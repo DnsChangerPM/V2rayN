@@ -27,7 +27,7 @@ class SubscriptionManager {
     required SubscriptionFetcher fetcher,
     required String Function() newId,
     required LogService log,
-  },)  : _store = store,
+  })  : _store = store,
         _cacheDir = cacheDir,
         _profiles = profiles,
         _fetcher = fetcher,
@@ -93,7 +93,7 @@ class SubscriptionManager {
     required String url,
     bool autoRefresh = false,
     int refreshIntervalMinutes = 240,
-  },) async {
+  }) async {
     if (!isValidUrl(url.trim())) {
       throw ArgumentError('Invalid subscription URL');
     }
@@ -197,7 +197,7 @@ class SubscriptionManager {
     required String lastError,
     DateTime? lastUpdatedAt,
     int? profileCount,
-  },) {
+  }) {
     final index = _subscriptions.indexWhere((s) => s.id == id);
     if (index < 0) return;
     final current = _subscriptions[index];

@@ -28,7 +28,7 @@ class XrayConfigBuilder {
   Map<String, dynamic> build({
     required ProxyProfile profile,
     required AppSettings settings,
-  },) {
+  }) {
     if (profile.protocol == ProxyProtocol.xrayJson) {
       return buildFromRawJson(
         rawJson: profile.rawJson ?? '{}',
@@ -53,7 +53,7 @@ class XrayConfigBuilder {
   Map<String, dynamic> buildFromRawJson({
     required String rawJson,
     required AppSettings settings,
-  },) {
+  }) {
     final decoded = json.decode(rawJson);
     if (decoded is! Map<dynamic, dynamic>) {
       throw const FormatException('Raw config must be a JSON object');

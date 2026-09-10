@@ -111,7 +111,7 @@ Future<void> _postLaunch(AppServices services, _WindowCloseHandler handler) asyn
 /// Connection control shared by tray + auto-connect (headless path that does
 /// not need a BuildContext).
 Future<void> _toggleFromTray(AppServices services,
-    {bool onlyConnect = false},) async {
+    {bool onlyConnect = false,}) async {
   final core = services.core;
   if (core.status.name == 'running') {
     if (onlyConnect) return;

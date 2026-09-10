@@ -38,7 +38,7 @@ class CoreManager {
     required OsInfo os,
     required LogService log,
     this.maxRestarts = 3,
-  },)  : _adapter = adapter,
+  })  : _adapter = adapter,
         _builder = builder,
         _validator = validator,
         _statsClient = statsClient,
@@ -176,7 +176,7 @@ class CoreManager {
   Future<void> connect({
     required ProxyProfile profile,
     required AppSettings settings,
-  },) async {
+  }) async {
     if (_disposed) return;
     if (_status == CoreStatus.starting || _status == CoreStatus.running) {
       _log.warning('core', 'connect() ignored: already ${_status.name}');

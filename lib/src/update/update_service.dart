@@ -19,7 +19,7 @@ class UpdateInfo {
     required this.latest,
     required this.releaseUrl,
     required this.isAvailable,
-  },);
+  });
 
   final SemVersion current;
   final SemVersion latest;
@@ -43,7 +43,7 @@ class UpdateService {
   /// Returns null when the check cannot complete (offline, rate-limited…).
   /// Never throws.
   Future<UpdateInfo?> checkForUpdates(
-      {Duration timeout = const Duration(seconds: 15)},) async {
+      {Duration timeout = const Duration(seconds: 15),}) async {
     final client = _client ?? http.Client();
     try {
       final response = await client.get(

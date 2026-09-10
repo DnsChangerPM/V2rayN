@@ -22,7 +22,7 @@ class InboundSettings {
     this.enableHttp = true,
     this.socksAuth = false,
     this.socksUsername = '',
-  },);
+  });
 
   final int socksPort;
   final int httpPort;
@@ -40,7 +40,7 @@ class InboundSettings {
     bool? enableHttp,
     bool? socksAuth,
     String? socksUsername,
-  },) {
+  }) {
     return InboundSettings(
       socksPort: socksPort ?? this.socksPort,
       httpPort: httpPort ?? this.httpPort,
@@ -85,7 +85,7 @@ class DnsSettings {
     this.dohUrl = 'https://dns.google/dns-query',
     this.queryTimeoutSeconds = 5,
     this.disableIpv6 = false,
-  },);
+  });
 
   final List<String> servers;
   final bool useSystemDns;
@@ -101,7 +101,7 @@ class DnsSettings {
     String? dohUrl,
     int? queryTimeoutSeconds,
     bool? disableIpv6,
-  },) {
+  }) {
     return DnsSettings(
       servers: servers ?? this.servers,
       useSystemDns: useSystemDns ?? this.useSystemDns,
@@ -144,7 +144,7 @@ class RoutingRule {
     this.ports = const [],
     this.protocols = const [],
     this.enabled = true,
-  },);
+  });
 
   /// [outbound]: 'proxy' | 'direct' | 'block'.
   final String id;
@@ -189,7 +189,7 @@ class RoutingSettings {
     this.rules = const [],
     this.bypassIran = false,
     this.bypassLan = true,
-  },);
+  });
 
   final RoutingMode mode;
   final List<RoutingRule> rules;
@@ -201,7 +201,7 @@ class RoutingSettings {
     List<RoutingRule>? rules,
     bool? bypassIran,
     bool? bypassLan,
-  },) {
+  }) {
     return RoutingSettings(
       mode: mode ?? this.mode,
       rules: rules ?? this.rules,
@@ -248,7 +248,7 @@ class NetworkTuning {
     this.enableUdp = true,
     this.mtu,
     this.tcpKeepAlive = true,
-  },);
+  });
 
   final NetworkPreset preset;
   final IpPreference ipPreference;
@@ -307,7 +307,7 @@ class NetworkTuning {
     bool? enableUdp,
     int? mtu,
     bool? tcpKeepAlive,
-  },) {
+  }) {
     return NetworkTuning(
       preset: preset ?? this.preset,
       ipPreference: ipPreference ?? this.ipPreference,
@@ -377,7 +377,7 @@ class AppSettings {
     this.checkUpdatesOnStartup = true,
     this.minimizeToTray = true,
     this.confirmBeforeQuit = false,
-  },);
+  });
 
   final ThemeModeSetting theme;
   final LocaleSetting locale;
@@ -417,7 +417,7 @@ class AppSettings {
     bool? checkUpdatesOnStartup,
     bool? minimizeToTray,
     bool? confirmBeforeQuit,
-  },) {
+  }) {
     return AppSettings(
       theme: theme ?? this.theme,
       locale: locale ?? this.locale,
