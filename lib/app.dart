@@ -59,7 +59,7 @@ class RadinApp extends StatelessWidget {
       useMaterial3: true,
       colorScheme: scheme,
       snackBarTheme: const SnackBarThemeData(behavior: SnackBarBehavior.floating),
-      cardTheme: const CardThemeData(margin: EdgeInsets.zero),
+      cardTheme: const CardTheme(margin: EdgeInsets.zero),
     );
   }
 }

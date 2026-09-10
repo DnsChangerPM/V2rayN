@@ -4,7 +4,7 @@ import '../core/app_controller.dart';
 import '../core/model/enums.dart';
 import '../core/process/stats_client.dart';
 import '../l10n/strings.dart';
-import '../utils/app_version.dart';
+import '../core/utils/app_version.dart';
 import 'pages/about_page.dart';
 import 'pages/logs_page.dart';
 import 'pages/servers_page.dart';
@@ -100,31 +100,31 @@ class _Header extends StatelessWidget {
     final strings = Strings.of(Localizations.localeOf(context));
     final theme = Theme.of(context);
     final state = controller.connectionState;
-    final connected = state == ConnectionState.connected;
+    final connected = state == ConnectionStatus.connected;
     final busy = state.isBusy;
 
     final Color accent;
     final String statusText;
     switch (state) {
-      case ConnectionState.connected:
+      case ConnectionStatus.connected:
         accent = Colors.green;
         statusText = connected
             ? '${strings.connectedTo}: ${controller.activeProfile?.displayName ?? ''}'
             : strings.statusRunning;
         break;
-      case ConnectionState.connecting:
+      case ConnectionStatus.connecting:
         accent = Colors.amber;
         statusText = strings.connecting;
         break;
-      case ConnectionState.disconnecting:
+      case ConnectionStatus.disconnecting:
         accent = Colors.amber;
         statusText = strings.disconnecting;
         break;
-      case ConnectionState.failed:
+      case ConnectionStatus.failed:
         accent = Colors.red;
         statusText = controller.errorMessage ?? strings.connectionFailed;
         break;
-      case ConnectionState.disconnected:
+      case ConnectionStatus.disconnected:
         accent = theme.colorScheme.outline;
         statusText = strings.statusStopped;
         break;
@@ -191,7 +191,7 @@ class _TrafficChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        color: Theme.of(context).colorScheme.surfaceVariant,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

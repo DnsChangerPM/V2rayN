@@ -202,7 +202,6 @@ class Strings {
   String get updateAvailable => t('updateAvailable');
   String get upToDate => t('upToDate');
   String get checkUpdate => t('checkUpdate');
-  String get download => t('download');
   String get aboutBody => t('aboutBody');
 }
 
@@ -370,7 +369,6 @@ const Map<String, String> _fa = <String, String>{
   'updateAvailable': 'نسخهٔ جدید در دسترس است',
   'upToDate': 'برنامه به‌روز است',
   'checkUpdate': 'بررسی به‌روزرسانی',
-  'download': 'دریافت',
   'aboutBody': 'یک کلاینت سبک و سریع برای V2Ray و Xray با تنظیمات بهینه‌سازی‌شده برای شبکهٔ ایران. پشتیبانی از ویندوز ۷ تا ۱۱.',
 };
 
@@ -538,6 +536,5 @@ const Map<String, String> _en = <String, String>{
   'updateAvailable': 'A new version is available',
   'upToDate': 'You are up to date',
   'checkUpdate': 'Check for updates',
-  'download': 'Download',
   'aboutBody': 'A light and fast V2Ray / Xray client with defaults tuned for Iranian networks. Supports Windows 7 through 11.',
 };

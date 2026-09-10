@@ -359,7 +359,7 @@ class CoreManager {
     final parts = cidr.split('/');
     final bits = parts.length == 2 ? int.tryParse(parts[1]) ?? 24 : 24;
     final mask = (0xFFFFFFFF << (32 - bits)) & 0xFFFFFFFF;
-    return <String>[
+    return <int>[
       (mask >> 24) & 0xFF,
       (mask >> 16) & 0xFF,
       (mask >> 8) & 0xFF,

@@ -32,7 +32,7 @@ class AppController extends ChangeNotifier {
   final SubscriptionClient _subscriptions = SubscriptionClient();
 
   late AppStore store;
-  ConnectionState connectionState = ConnectionState.disconnected;
+  ConnectionStatus connectionState = ConnectionStatus.disconnected;
   String? statusMessage;
   String? errorMessage;
   Profile? activeProfile;
@@ -49,7 +49,7 @@ class AppController extends ChangeNotifier {
   AppSettings get settings => store.settings;
   List<Profile> get profiles => store.profiles;
   List<Subscription> get subscriptions => store.subscriptions;
-  bool get isConnected => connectionState == ConnectionState.connected;
+  bool get isConnected => connectionState == ConnectionStatus.connected;
 
   // -------------------------------------------------------------------------
   // Startup
@@ -144,7 +144,7 @@ class AppController extends ChangeNotifier {
       return;
     }
     errorMessage = null;
-    connectionState = ConnectionState.connecting;
+    connectionState = ConnectionStatus.connecting;
     activeProfile = profile;
     settings.selectedProfileId = profile.id;
     statusMessage = '${AppVersion.name}: ${profile.displayName}';
@@ -157,7 +157,7 @@ class AppController extends ChangeNotifier {
     );
 
     if (started) {
-      connectionState = ConnectionState.connected;
+      connectionState = ConnectionStatus.connected;
       errorMessage = null;
       _shell.setTrayTooltip('${AppVersion.name} - ${profile.displayName}');
       _shell.showBalloon(
@@ -165,7 +165,7 @@ class AppController extends ChangeNotifier {
         'متصل شد: ${profile.displayName}',
       );
     } else {
-      connectionState = ConnectionState.failed;
+      connectionState = ConnectionStatus.failed;
       errorMessage = coreManager.lastError;
       _shell.showBalloon(AppVersion.name, errorMessage ?? '', isError: true);
     }
@@ -173,13 +173,13 @@ class AppController extends ChangeNotifier {
   }
 
   Future<void> disconnect({bool silent = false}) async {
-    if (connectionState == ConnectionState.disconnected) {
+    if (connectionState == ConnectionStatus.disconnected) {
       return;
     }
-    connectionState = ConnectionState.disconnecting;
+    connectionState = ConnectionStatus.disconnecting;
     notifyListeners();
     await coreManager.stop(settings: settings);
-    connectionState = ConnectionState.disconnected;
+    connectionState = ConnectionStatus.disconnected;
     activeProfile = null;
     traffic = const TrafficStats();
     if (!silent) {
@@ -318,7 +318,7 @@ class AppController extends ChangeNotifier {
     final parsed = <Profile>[];
     for (final line in text.split(RegExp(r'[\r\n]+'))) {
       for (final candidate in line.split(RegExp(r'\s+'))) {
-        final profile = LinkParserParse(candidate);
+        final profile = LinkParser.parse(candidate);
         if (profile != null) {
           parsed.add(profile);
         }
@@ -422,7 +422,7 @@ class AppController extends ChangeNotifier {
       patchSettings(updated, reconnect: true);
 
   Future<void> applyAutoStart() async {
-    await _shell.setAutoStart(
+    _shell.setAutoStart(
       enabled: settings.autoStartEnabled,
       exePath: Platform.resolvedExecutable,
       args: settings.startMinimized ? '--minimized' : '',

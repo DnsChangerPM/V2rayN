@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/app_controller.dart';
-import '../../core/model/enums.dart';
 import '../../core/model/profile.dart';
-import '../../core/model/settings.dart';
 import '../../core/net/subscription.dart';
 import '../../l10n/strings.dart';
 import '../dialogs/profile_editor.dart';

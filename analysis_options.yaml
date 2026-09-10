@@ -18,7 +18,6 @@ linter:
   rules:
     - always_declare_return_types
     - avoid_empty_else
-    - avoid_redundant_argument_values
     - avoid_slow_async_io
     - cancel_subscriptions
     - close_sinks

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:win_shell/win_shell.dart';
 
 import '../../l10n/strings.dart';
-import '../../utils/app_version.dart';
+import '../../core/utils/app_version.dart';
 
 /// Queries the GitHub releases API and offers the newest installer.
 Future<void> showUpdateDialog(BuildContext context) async {

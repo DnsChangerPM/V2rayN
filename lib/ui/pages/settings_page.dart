@@ -5,7 +5,7 @@ import '../../core/app_controller.dart';
 import '../../core/model/enums.dart';
 import '../../core/model/settings.dart';
 import '../../l10n/strings.dart';
-import '../../utils/paths.dart';
+import '../../core/utils/paths.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key, required this.controller});
@@ -328,7 +328,7 @@ class _SettingsBody extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: DropdownButtonFormField<T>(
-          initialValue: value,
+          value: value,
           decoration: InputDecoration(labelText: label),
           items: values
               .map((e) => DropdownMenuItem<T>(value: e, child: Text(display(e))))

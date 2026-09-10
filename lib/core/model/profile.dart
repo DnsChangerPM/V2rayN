@@ -235,7 +235,7 @@ class Profile {
         break;
       case ProtocolType.shadowsocks:
         settings['servers'] = <Map<String, dynamic>>[
-          <Map<String, dynamic>>{
+          <String, dynamic>{
             'address': address,
             'port': port,
             'method': security,

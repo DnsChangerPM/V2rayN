@@ -45,10 +45,10 @@ class SubscriptionClient {
 
     final client = HttpClient()
       ..connectionTimeout = const Duration(seconds: 15)
+      ..userAgent = userAgent
       // Subscription panels in Iran very often serve self signed or expired
       // certificates; refusing to connect would make the app unusable.
-      ..badCertificateCallback = (_, __, ___) => true
-      ..userAgent = userAgent;
+      ..badCertificateCallback = (_, __, ___) => true;
 
     try {
       final request = await client.getUrl(uri).timeout(timeout);

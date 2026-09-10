@@ -123,7 +123,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
                   children: <Widget>[
                     Expanded(
                       child: DropdownButtonFormField<ProtocolType>(
-                        initialValue: _profile.protocol,
+                        value: _profile.protocol,
                         decoration: InputDecoration(labelText: strings.protocol),
                         items: ProtocolType.values
                             .map((e) => DropdownMenuItem<ProtocolType>(
@@ -162,7 +162,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
                 if (isVless) ...<Widget>[
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
-                    initialValue: _profile.flow.isEmpty ? '' : _profile.flow,
+                    value: _profile.flow.isEmpty ? '' : _profile.flow,
                     decoration: InputDecoration(labelText: strings.flow),
                     items: const <DropdownMenuItem<String>>[
                       DropdownMenuItem<String>(value: '', child: Text('none')),
@@ -178,7 +178,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
                   children: <Widget>[
                     Expanded(
                       child: DropdownButtonFormField<TransportType>(
-                        initialValue: _profile.network,
+                        value: _profile.network,
                         decoration: InputDecoration(labelText: strings.transport),
                         items: TransportType.values
                             .map((e) => DropdownMenuItem<TransportType>(
@@ -196,7 +196,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<SecurityType>(
-                        initialValue: _profile.securityType,
+                        value: _profile.securityType,
                         decoration: InputDecoration(labelText: strings.security),
                         items: SecurityType.values
                             .map((e) => DropdownMenuItem<SecurityType>(
@@ -243,7 +243,7 @@ class _ProfileEditorDialogState extends State<_ProfileEditorDialog> {
                   children: <Widget>[
                     Expanded(
                       child: DropdownButtonFormField<FragmentPreset>(
-                        initialValue: _profile.fragment,
+                        value: _profile.fragment,
                         decoration: InputDecoration(labelText: strings.fragment),
                         items: FragmentPreset.values
                             .map((e) => DropdownMenuItem<FragmentPreset>(

@@ -278,12 +278,15 @@ class WinShell {
       native = null;
     }
     if (native != null) {
-      _eventCallback = NativeCallable<Void Function(Int32)>.listener((int value) {
+      void handleEvent(int value) {
         final event = WinShellEvent.fromNative(value);
         if (event != null && !_events.isClosed) {
           _events.add(event);
         }
-      });
+      }
+
+      _eventCallback =
+          NativeCallable<Void Function(Int32)>.listener(handleEvent);
       native.registerEventCallback(_eventCallback!.nativeFunction);
     }
     _native = native;

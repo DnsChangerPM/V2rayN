@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_controller.dart';
 import '../../l10n/strings.dart';
-import '../../utils/app_version.dart';
+import '../../core/utils/app_version.dart';
 import '../dialogs/update_dialog.dart';
 
 class AboutPage extends StatelessWidget {

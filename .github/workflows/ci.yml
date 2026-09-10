@@ -68,7 +68,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Continue'
-          ./build/tools/New-WindowsRunner.ps1 -Version 0.0.0-ci *>&1 |
+          & ./build/tools/New-WindowsRunner.ps1 -Version 0.0.0-ci 2>&1 |
             Tee-Object -FilePath ci-runner.log
           "RUNNER_EXIT=$LASTEXITCODE" | Out-File -Append -Encoding utf8 ci-runner.log
 

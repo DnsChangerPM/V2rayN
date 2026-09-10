@@ -221,7 +221,7 @@ enum AppLanguage {
 }
 
 /// Current state of the connection.
-enum ConnectionState {
+enum ConnectionStatus {
   disconnected,
   connecting,
   connected,
