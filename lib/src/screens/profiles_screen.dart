@@ -100,7 +100,6 @@ class _Toolbar extends StatelessWidget {
               ),
           ],
         ),
-        const Spacer(),
         FilledButton.tonalIcon(
           onPressed:
               profiles.ranking ? null : () => _runBestProfile(context),

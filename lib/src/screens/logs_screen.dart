@@ -70,7 +70,6 @@ class _LogsScreenState extends State<LogsScreen> {
                 ],
                 onChanged: logs.setMinLevel,
               ),
-              const Spacer(),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
