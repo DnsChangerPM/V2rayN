@@ -5,6 +5,12 @@ project(iranlink LANGUAGES CXX)
 
 set(BINARY_NAME "IranLink")
 
+# Use Unicode for all projects. Required by the standard Flutter Windows
+# template and by plugins (window_manager, system_tray) whose sources use
+# wide-char Win32 APIs; without it the ANSI variants are selected and the
+# plugins fail to compile.
+add_definitions(-DUNICODE -D_UNICODE)
+
 cmake_policy(SET CMP0063 NEW)
 
 set(CMAKE_INSTALL_RPATH "$ORIGIN/lib")
