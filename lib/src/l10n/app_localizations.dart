@@ -5,6 +5,7 @@
 /// only produce stable message keys.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'strings.dart';
@@ -55,8 +56,8 @@ class AppLocalizationsDelegate
       ['en', 'fa'].contains(locale.languageCode);
 
   @override
-  Future<AppLocalizations> load(Locale locale) async =>
-      AppLocalizations(locale);
+  Future<AppLocalizations> load(Locale locale) =>
+      SynchronousFuture<AppLocalizations>(AppLocalizations(locale));
 
   @override
   bool shouldReload(AppLocalizationsDelegate old) => false;

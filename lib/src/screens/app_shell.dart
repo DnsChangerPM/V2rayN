@@ -48,10 +48,17 @@ class AppShell extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
+          // useIndicator:false keeps every labeled destination 52px tall
+          // (icon 24 + gaps + label) instead of 60px, so the eight
+          // destinations plus the leading block fit windows as short as
+          // ~520px without overflowing — NavigationRail lays its
+          // destinations out in a non-scrollable Expanded column, so the
+          // content simply must fit.
           NavigationRail(
             selectedIndex: navigation.index,
             onDestinationSelected: navigation.go,
             labelType: NavigationRailLabelType.all,
+            useIndicator: false,
             leading: Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Column(

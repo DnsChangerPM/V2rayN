@@ -80,7 +80,7 @@ class ProfileRepository implements ProfileRepositoryPort {
       'profiles': _profiles.map((p) => p.toJson()).toList(),
       'groups': _groups.map((g) => g.toJson()).toList(),
     });
-    _changed.add(null);
+    if (!_changed.isClosed) _changed.add(null);
   }
 
   ProxyProfile? findById(String id) {

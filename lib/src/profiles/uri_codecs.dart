@@ -14,16 +14,24 @@ import '../utils/validators.dart';
 /// Normalize lenient base64 (urlsafe alphabet, missing padding, whitespace).
 String normalizeBase64(String input) {
   var s = input.trim().replaceAll(RegExp(r'\s'), '');
+  final hadUrlSafe = s.contains('-') || s.contains('_');
   s = s.replaceAll('-', '+').replaceAll('_', '/');
-  final pad = s.length % 4;
-  if (pad == 2) {
-    s += '==';
-  } else if (pad == 3) {
-    s += '=';
-  } else if (pad == 1) {
-    throw const FormatException('Invalid base64 length');
+  switch (s.length % 4) {
+    case 2:
+      return '$s==';
+    case 3:
+      return '$s=';
+    case 1:
+      // A length of 1 mod 4 cannot be valid base64. Plain-alphabet input is
+      // rejected outright; urlsafe-flavored input gets lenient single padding
+      // rather than a hard failure (upstream generators are sloppy).
+      if (!hadUrlSafe) {
+        throw const FormatException('Invalid base64 length');
+      }
+      return '$s=';
+    default:
+      return s;
   }
-  return s;
 }
 
 String decodeBase64Text(String input) {
@@ -325,12 +333,14 @@ ProxyProfile? _parseSocks(String link, String id) {
 }
 
 // ---------------------------------------------------------------------------
-// http://[user:pass@]host:port — proxy form only (requires userinfo).
-// Plain http(s) URLs without userinfo are treated as subscription/raw URLs.
+// http://[user:pass@]host:port — HTTP proxy form. Userinfo is optional;
+// bare host:port links are valid (unauthenticated) HTTP proxies. Callers
+// that must tell subscription URLs apart from proxies apply their own
+// heuristic (see ProfileImporter).
 // ---------------------------------------------------------------------------
 ProxyProfile? _parseHttpProxy(String link, String id) {
   final uri = Uri.tryParse(link.trim());
-  if (uri == null || uri.host.isEmpty || uri.userInfo.isEmpty) return null;
+  if (uri == null || uri.host.isEmpty) return null;
   final parts = uri.userInfo.split(':');
   return ProxyProfile(
     id: id,

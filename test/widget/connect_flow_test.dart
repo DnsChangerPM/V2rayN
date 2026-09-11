@@ -15,25 +15,40 @@ import 'package:iranlink/src/state/connection_provider.dart';
 import 'package:iranlink/src/state/service_locator.dart';
 import 'package:provider/provider.dart';
 
+/// Dispose under a bounded timeout: after a failed test the framework skips
+/// unmounting the tree, so the providers keep their stream subscriptions and
+/// the services' `controller.close()` futures wait for done deliveries that
+/// the (already finished) fake-async pump loop will never schedule. Capping
+/// the await keeps a single failing test from stalling the whole suite.
+Future<void> _dispose(AppServices services) =>
+    services.dispose().timeout(const Duration(seconds: 5), onTimeout: () {});
+
 void main() {
   testWidgets('connect surfaces missing-core error honestly', (tester) async {
-    final temp =
-        await Directory.systemTemp.createTemp('iranlink-connect-');
-    addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
-    final services = await AppServices.create(
-        pathsOverride: AppPaths.custom(temp, portable: true),);
-    addTearDown(services.dispose);
+    // Boot + seed the real service graph under runAsync: the test body runs
+    // in a FakeAsync zone where real filesystem/IO completions never resolve,
+    // so awaiting them bare would deadlock the suite.
+    final booted = await tester.runAsync<AppServices>(() async {
+      final temp =
+          await Directory.systemTemp.createTemp('iranlink-connect-');
+      addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
+      final created = await AppServices.create(
+          pathsOverride: AppPaths.custom(temp, portable: true),);
 
-    final profile = await services.profiles.add(const ProxyProfile(
-      id: 'p1',
-      name: 'test node',
-      protocol: ProxyProtocol.vless,
-      address: '127.0.0.1',
-      port: 9,
-      secret: '123e4567-e89b-12d3-a456-426614174000',
-    ),);
-    await services.settings
-        .update((s) => s.copyWith(activeProfileId: profile.id));
+      final profile = await created.profiles.add(const ProxyProfile(
+        id: 'p1',
+        name: 'test node',
+        protocol: ProxyProtocol.vless,
+        address: '127.0.0.1',
+        port: 9,
+        secret: '123e4567-e89b-12d3-a456-426614174000',
+      ),);
+      await created.settings
+          .update((s) => s.copyWith(activeProfileId: profile.id));
+      return created;
+    });
+    final services = booted!;
+    addTearDown(() => _dispose(services));
 
     await tester.pumpWidget(IranLinkApp(services: services));
     await tester.pumpAndSettle();

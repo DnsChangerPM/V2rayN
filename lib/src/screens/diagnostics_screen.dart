@@ -48,9 +48,12 @@ class _DiagnosticsScreenState extends State<DiagnosticsScreen> {
         children: [
           Row(
             children: [
-              Text(
-                context.l10n('diagnosticsTitle'),
-                style: Theme.of(context).textTheme.headlineSmall,
+              Flexible(
+                child: Text(
+                  context.l10n('diagnosticsTitle'),
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               const Spacer(),
               FilledButton.tonalIcon(

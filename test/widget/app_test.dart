@@ -9,11 +9,26 @@ import 'package:iranlink/src/state/connection_provider.dart';
 import 'package:iranlink/src/state/service_locator.dart';
 import 'package:provider/provider.dart';
 
-Future<AppServices> _boot() async {
-  final temp = await Directory.systemTemp.createTemp('iranlink-widget-');
-  addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
-  return AppServices.create(
-      pathsOverride: AppPaths.custom(temp, portable: true),);
+/// Dispose under a bounded timeout: after a failed test the framework skips
+/// unmounting the tree, so the providers keep their stream subscriptions and
+/// the services' `controller.close()` futures wait for done deliveries that
+/// the (already finished) fake-async pump loop will never schedule. Capping
+/// the await keeps a single failing test from stalling the whole suite.
+Future<void> _dispose(AppServices services) =>
+    services.dispose().timeout(const Duration(seconds: 5), onTimeout: () {});
+
+Future<AppServices> _boot(WidgetTester tester) async {
+  // The test body runs inside a FakeAsync zone: real-async completions
+  // (filesystem IO, service bootstrap) only resolve under runAsync, so all
+  // genuine IO for boot must happen here — awaiting it in the bare test body
+  // would deadlock the suite.
+  final services = await tester.runAsync<AppServices>(() async {
+    final temp = await Directory.systemTemp.createTemp('iranlink-widget-');
+    addTearDown(() => temp.delete(recursive: true).catchError((_) => temp));
+    return AppServices.create(
+        pathsOverride: AppPaths.custom(temp, portable: true),);
+  });
+  return services!;
 }
 
 Future<void> _pump(WidgetTester tester, AppServices services) async {
@@ -30,8 +45,8 @@ ConnectionProvider _connectionOf(WidgetTester tester) {
 void main() {
   testWidgets('boots to dashboard; connect without profile fails friendly',
       (tester) async {
-    final services = await _boot();
-    addTearDown(services.dispose);
+    final services = await _boot(tester);
+    addTearDown(() => _dispose(services));
     await _pump(tester, services);
 
     expect(find.text('IranLink'), findsWidgets);
@@ -46,8 +61,8 @@ void main() {
   });
 
   testWidgets('navigates between pages', (tester) async {
-    final services = await _boot();
-    addTearDown(services.dispose);
+    final services = await _boot(tester);
+    addTearDown(() => _dispose(services));
     await _pump(tester, services);
 
     for (final destination in [
@@ -67,8 +82,8 @@ void main() {
   });
 
   testWidgets('settings toggle persists to service layer', (tester) async {
-    final services = await _boot();
-    addTearDown(services.dispose);
+    final services = await _boot(tester);
+    addTearDown(() => _dispose(services));
     await _pump(tester, services);
 
     await tester.tap(find.text('Settings'));

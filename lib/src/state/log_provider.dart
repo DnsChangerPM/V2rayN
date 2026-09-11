@@ -13,7 +13,8 @@ class LogProvider extends ChangeNotifier {
       // Coalesce bursts: at most one rebuild per 250ms.
       if (_pending) return;
       _pending = true;
-      Timer(const Duration(milliseconds: 250), () {
+      _coalesceTimer = Timer(const Duration(milliseconds: 250), () {
+        _coalesceTimer = null;
         _pending = false;
         notifyListeners();
       });
@@ -22,6 +23,7 @@ class LogProvider extends ChangeNotifier {
 
   final LogService _log;
   late final StreamSubscription<LogEntry> _subscription;
+  Timer? _coalesceTimer;
   bool _pending = false;
 
   LogLevel? _minLevel;
@@ -49,6 +51,11 @@ class LogProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    // Cancel the pending coalesce tick: otherwise it fires after dispose
+    // (notifyListeners on a dead notifier) and, in widget tests, leaves a
+    // pending timer that fails the binding's post-test invariants.
+    _coalesceTimer?.cancel();
+    _coalesceTimer = null;
     _subscription.cancel();
     super.dispose();
   }

@@ -102,11 +102,67 @@ jobs:
       - name: Unit + widget tests
         run: |
           set +e
-          flutter test --reporter expanded 2>&1 | tee test.log
-          code=${PIPESTATUS[0]}
+          flutter test test/unit --reporter expanded 2>&1 | tee test.log
+          unit_code=${PIPESTATUS[0]}
+          # Widget suites run serially so exception dumps stay contiguous in
+          # the log (parallel suites interleave other suites' lines into the
+          # dumps and defeat the failure digest below).
+          flutter test test/widget --reporter expanded --concurrency 1 2>&1 | tee -a test.log
+          widget_code=${PIPESTATUS[0]}
+          if [ "$unit_code" -ne 0 ]; then code="$unit_code"; else code="$widget_code"; fi
           if [ "$code" -ne 0 ]; then
-            echo "::error::flutter test failed with exit $code"
-            grep -viE "^\s*$" test.log | tail -40 | sed 's/^/::error::TST: /'
+            echo "::error::flutter test failed with exit $code (unit=$unit_code widget=$widget_code) | SUMMARY: $(grep -viE '^\s*$' test.log | tail -1)"
+            python3 - <<'PY'
+          import re
+          try:
+              text = open('test.log', encoding='utf-8', errors='replace').read()
+              lines = text.splitlines()
+              ts = re.compile(r'^\d\d:\d\d ')
+              idxs = [i for i, ln in enumerate(lines)
+                      if ts.match(ln) and ln.rstrip().endswith('[E]')]
+              markers = ('overflowed by', 'orientation of', 'error-causing widget',
+                         'specific RenderFlex', 'created by', 'was thrown',
+                         'Failed assertion', 'Test timed out', 'Null check',
+                         'Bad state', 'Expected:', 'Actual:', 'Which:',
+                         'The following')
+              for k, i in enumerate(idxs[:3]):
+                  # Exception dumps are printed ABOVE the [E] result line
+                  # (flutter dumps them when the frame error occurs); collect
+                  # both directions around the [E] line.
+                  pre = []
+                  j = i - 1
+                  while j >= 0 and not ts.match(lines[j]) and len(pre) < 300:
+                      pre.append(lines[j])
+                      j -= 1
+                  pre.reverse()
+                  picked = []
+                  m = 0
+                  while m < len(pre):
+                      if any(mk in pre[m] for mk in markers):
+                          picked.extend(pre[m:m + 3])
+                          m += 3
+                      else:
+                          m += 1
+                  if not picked:
+                      picked = pre[:6]
+                  post = []
+                  j = i + 1
+                  while j < len(lines) and not ts.match(lines[j]) and len(post) < 12:
+                      post.append(lines[j])
+                      j += 1
+                  parts = [lines[i]] + picked + post
+                  body = ' | '.join(x.strip() for x in parts if x.strip())
+                  # Chunk long bodies across several annotations so full
+                  # exception dumps survive GitHub's per-annotation limit.
+                  for c in range(0, len(body), 1100):
+                      if c // 1100 >= 6:
+                          break
+                      print(f"::error::FAIL {k + 1}/{len(idxs)}"
+                            f"[{c // 1100 + 1}]: {body[c:c + 1100]}")
+          except Exception as e:  # diagnostics must never fail the job itself
+              print(f"::warning::test-log digest failed: {e}")
+          PY
+            echo "::error::TAIL: $(grep -viE '^\s*$' test.log | tail -12 | tr '\n' '|')"
             exit "$code"
           fi
 
@@ -179,7 +235,21 @@ jobs:
 
       - name: Build Windows (release)
         shell: pwsh
-        run: flutter build windows --release
+        run: |
+          flutter build windows --release 2>&1 | Tee-Object -FilePath windows-build.log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) { exit $code }
+
+      - name: On failure - emit Windows build log tail
+        if: failure()
+        shell: pwsh
+        run: |
+          if (Test-Path windows-build.log) {
+            $tail = (Get-Content windows-build.log | Select-Object -Last 40) -join "%0A"
+            Write-Host "::error::windows build failed; last 40 log lines:%0A$tail"
+          } else {
+            Write-Host "::error::windows build failed and windows-build.log is missing"
+          }
 
       - name: Stage bundle
         shell: pwsh
@@ -187,7 +257,11 @@ jobs:
 
       - name: Compatibility check
         shell: pwsh
-        run: python scripts/compat_check.py --version 0.0.0-ci --bundle build/windows/x64/runner/Release
+        run: |
+          # CI builds keep the committed version stamp (no set_version step),
+          # so the gate must compare against the stamp actually in the tree.
+          $stamp = (Select-String -Path lib/src/core/app_version.dart -Pattern "kAppVersion = '([^']+)'" | Select-Object -First 1).Matches[0].Groups[1].Value
+          python scripts/compat_check.py --version $stamp --bundle build/windows/x64/runner/Release
 
       - name: Integration test (real core lifecycle, debug build)
         shell: pwsh

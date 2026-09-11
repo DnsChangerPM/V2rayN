@@ -17,8 +17,10 @@ class SemVersion implements Comparable<SemVersion> {
       RegExp(r'^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:[-+][0-9A-Za-z.-]+)?$');
 
   /// Throws [FormatException] unless [input] is strict MAJOR.MINOR.PATCH.
+  /// Strict means *exactly* the three dotted numbers — no leading `v`, no
+  /// pre-release/build suffix, no leading or trailing whitespace.
   factory SemVersion.parseStrict(String input) {
-    final match = _strict.firstMatch(input.trim());
+    final match = _strict.firstMatch(input);
     if (match == null) {
       throw FormatException('Not strict SemVer MAJOR.MINOR.PATCH: $input');
     }

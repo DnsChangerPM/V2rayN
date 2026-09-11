@@ -67,7 +67,9 @@ class Win32Window {
   // Processes and route salient window messages for mouse handling,
   // size change and DPI. Delegates handling of these to member overloads that
   // inheriting classes can handle.
-  virtual void OnCreate();
+  // Called when Create is called, allowing subclass window-related setup.
+  // Subclasses should return false if setup fails.
+  virtual bool OnCreate();
   virtual void OnDestroy();
 
   // OS callback called by message pump. Handles the WM_NCCREATE message which
