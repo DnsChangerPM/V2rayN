@@ -245,9 +245,8 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path windows-build.log) {
-            $lines = Get-Content windows-build.log
-            Write-Host "::error::windows build failed; log has $($lines.Count) lines, tail below"
-            $lines | Select-Object -Last 30 | ForEach-Object { Write-Host "::error::$_" }
+            $tail = (Get-Content windows-build.log | Select-Object -Last 40) -join "%0A"
+            Write-Host "::error file=windows-build.log::build failed; last 40 log lines:%0A$tail"
           } else {
             Write-Host "::error::windows build failed and windows-build.log is missing"
           }
