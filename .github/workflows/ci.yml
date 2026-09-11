@@ -235,7 +235,22 @@ jobs:
 
       - name: Build Windows (release)
         shell: pwsh
-        run: flutter build windows --release
+        run: |
+          flutter build windows --release 2>&1 | Tee-Object -FilePath windows-build.log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) { exit $code }
+
+      - name: On failure - emit Windows build log tail
+        if: failure()
+        shell: pwsh
+        run: |
+          if (Test-Path windows-build.log) {
+            $lines = Get-Content windows-build.log
+            Write-Host "::error::windows build failed; log has $($lines.Count) lines, tail below"
+            $lines | Select-Object -Last 30 | ForEach-Object { Write-Host "::error::$_" }
+          } else {
+            Write-Host "::error::windows build failed and windows-build.log is missing"
+          }
 
       - name: Stage bundle
         shell: pwsh
