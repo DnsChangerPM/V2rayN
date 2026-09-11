@@ -167,6 +167,9 @@ class _ProfilePicker extends StatelessWidget {
                     value: activeId != null && activeId!.isNotEmpty
                         ? activeId
                         : null,
+                    // Imported profile names can be long; ellipsize instead
+                    // of overflowing the decorator's inner Row.
+                    isExpanded: true,
                     hint: Text(context.l10n('noProfileSelected')),
                     items: [
                       for (final profile in all)

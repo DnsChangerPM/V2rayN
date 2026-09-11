@@ -215,6 +215,9 @@ class _DropdownRow<T> extends StatelessWidget {
           Expanded(
             child: DropdownButtonFormField<T>(
               value: value,
+              // Long localized labels (Ahem test font is full-width) must
+              // ellipsize instead of overflowing the decorator's inner Row.
+              isExpanded: true,
               items: [
                 for (final item in items)
                   DropdownMenuItem(value: item, child: Text(labelFor(item))),
