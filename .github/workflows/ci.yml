@@ -246,7 +246,7 @@ jobs:
         run: |
           if (Test-Path windows-build.log) {
             $tail = (Get-Content windows-build.log | Select-Object -Last 40) -join "%0A"
-            Write-Host "::error file=windows-build.log::build failed; last 40 log lines:%0A$tail"
+            Write-Host "::error::windows build failed; last 40 log lines:%0A$tail"
           } else {
             Write-Host "::error::windows build failed and windows-build.log is missing"
           }
@@ -257,7 +257,11 @@ jobs:
 
       - name: Compatibility check
         shell: pwsh
-        run: python scripts/compat_check.py --version 0.0.0-ci --bundle build/windows/x64/runner/Release
+        run: |
+          # CI builds keep the committed version stamp (no set_version step),
+          # so the gate must compare against the stamp actually in the tree.
+          $stamp = (Select-String -Path lib/src/core/app_version.dart -Pattern "kAppVersion = '([^']+)'" | Select-Object -First 1).Matches[0].Groups[1].Value
+          python scripts/compat_check.py --version $stamp --bundle build/windows/x64/runner/Release
 
       - name: Integration test (real core lifecycle, debug build)
         shell: pwsh
