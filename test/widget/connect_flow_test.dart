@@ -15,6 +15,14 @@ import 'package:iranlink/src/state/connection_provider.dart';
 import 'package:iranlink/src/state/service_locator.dart';
 import 'package:provider/provider.dart';
 
+/// Dispose under a bounded timeout: after a failed test the framework skips
+/// unmounting the tree, so the providers keep their stream subscriptions and
+/// the services' `controller.close()` futures wait for done deliveries that
+/// the (already finished) fake-async pump loop will never schedule. Capping
+/// the await keeps a single failing test from stalling the whole suite.
+Future<void> _dispose(AppServices services) =>
+    services.dispose().timeout(const Duration(seconds: 5), onTimeout: () {});
+
 void main() {
   testWidgets('connect surfaces missing-core error honestly', (tester) async {
     // Boot + seed the real service graph under runAsync: the test body runs
@@ -40,7 +48,7 @@ void main() {
       return created;
     });
     final services = booted!;
-    addTearDown(services.dispose);
+    addTearDown(() => _dispose(services));
 
     await tester.pumpWidget(IranLinkApp(services: services));
     await tester.pumpAndSettle();

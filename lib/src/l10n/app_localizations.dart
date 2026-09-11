@@ -55,8 +55,8 @@ class AppLocalizationsDelegate
       ['en', 'fa'].contains(locale.languageCode);
 
   @override
-  Future<AppLocalizations> load(Locale locale) async =>
-      AppLocalizations(locale);
+  Future<AppLocalizations> load(Locale locale) =>
+      SynchronousFuture<AppLocalizations>(AppLocalizations(locale));
 
   @override
   bool shouldReload(AppLocalizationsDelegate old) => false;
