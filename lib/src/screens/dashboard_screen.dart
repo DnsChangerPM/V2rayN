@@ -81,16 +81,22 @@ class _ConnectionCard extends StatelessWidget {
               children: [
                 StatusDot(severity: severity, size: 14),
                 const SizedBox(width: 12),
-                Text(
-                  context.l10n(stateKey),
-                  style: theme.textTheme.headlineSmall,
+                Flexible(
+                  child: Text(
+                    context.l10n(stateKey),
+                    style: theme.textTheme.headlineSmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const Spacer(),
-                Text(
-                  '${context.l10n('coreVersion')}: '
-                  '${connection.coreVersion.isEmpty ? context.l10n('unknown') : connection.coreVersion}',
-                  style: theme.textTheme.bodySmall,
-                  textDirection: TextDirection.ltr,
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    '${context.l10n('coreVersion')}: '
+                    '${connection.coreVersion.isEmpty ? context.l10n('unknown') : connection.coreVersion}',
+                    style: theme.textTheme.bodySmall,
+                    textDirection: TextDirection.ltr,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
