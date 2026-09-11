@@ -102,10 +102,16 @@ jobs:
       - name: Unit + widget tests
         run: |
           set +e
-          flutter test --reporter expanded 2>&1 | tee test.log
-          code=${PIPESTATUS[0]}
+          flutter test test/unit --reporter expanded 2>&1 | tee test.log
+          unit_code=${PIPESTATUS[0]}
+          # Widget suites run serially so exception dumps stay contiguous in
+          # the log (parallel suites interleave other suites' lines into the
+          # dumps and defeat the failure digest below).
+          flutter test test/widget --reporter expanded --concurrency 1 2>&1 | tee -a test.log
+          widget_code=${PIPESTATUS[0]}
+          if [ "$unit_code" -ne 0 ]; then code="$unit_code"; else code="$widget_code"; fi
           if [ "$code" -ne 0 ]; then
-            echo "::error::flutter test failed with exit $code | SUMMARY: $(grep -viE '^\s*$' test.log | tail -1)"
+            echo "::error::flutter test failed with exit $code (unit=$unit_code widget=$widget_code) | SUMMARY: $(grep -viE '^\s*$' test.log | tail -1)"
             python3 - <<'PY'
           import re
           try:

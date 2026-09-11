@@ -48,50 +48,46 @@ class AppShell extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          // Tall rails (many destinations + leading block) must not overflow
-          // short windows: fill the full height when there is room, scroll
-          // when there is not.
-          LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: NavigationRail(
-                  selectedIndex: navigation.index,
-                  onDestinationSelected: navigation.go,
-                  labelType: NavigationRailLabelType.all,
-                  leading: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          'assets/images/app_icon_master.png',
-                          width: 40,
-                          height: 40,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                            Icons.link,
-                            size: 40,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          context.l10n('appName'),
-                          style: Theme.of(context).textTheme.labelSmall,
-                        ),
-                      ],
+          // useIndicator:false keeps every labeled destination 52px tall
+          // (icon 24 + gaps + label) instead of 60px, so the eight
+          // destinations plus the leading block fit windows as short as
+          // ~520px without overflowing — NavigationRail lays its
+          // destinations out in a non-scrollable Expanded column, so the
+          // content simply must fit.
+          NavigationRail(
+            selectedIndex: navigation.index,
+            onDestinationSelected: navigation.go,
+            labelType: NavigationRailLabelType.all,
+            useIndicator: false,
+            leading: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Column(
+                children: [
+                  Image.asset(
+                    'assets/images/app_icon_master.png',
+                    width: 40,
+                    height: 40,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.link,
+                      size: 40,
                     ),
                   ),
-                  destinations: [
-                    for (final destination in destinations)
-                      NavigationRailDestination(
-                        icon: Icon(destination.$1),
-                        selectedIcon: Icon(destination.$2),
-                        label: Text(context.l10n(destination.$3)),
-                      ),
-                  ],
-                ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.l10n('appName'),
+                    style: Theme.of(context).textTheme.labelSmall,
+                  ),
+                ],
               ),
             ),
+            destinations: [
+              for (final destination in destinations)
+                NavigationRailDestination(
+                  icon: Icon(destination.$1),
+                  selectedIcon: Icon(destination.$2),
+                  label: Text(context.l10n(destination.$3)),
+                ),
+            ],
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
