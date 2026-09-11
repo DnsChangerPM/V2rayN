@@ -114,24 +114,39 @@ jobs:
               ts = re.compile(r'^\d\d:\d\d ')
               idxs = [i for i, ln in enumerate(lines)
                       if ts.match(ln) and ln.rstrip().endswith('[E]')]
+              markers = ('overflowed by', 'orientation of', 'error-causing widget',
+                         'specific RenderFlex', 'created by', 'was thrown',
+                         'Failed assertion', 'Test timed out', 'Null check',
+                         'Bad state', 'Expected:', 'Actual:', 'Which:',
+                         'The following')
               for k, i in enumerate(idxs[:7]):
                   # Exception dumps are printed ABOVE the [E] result line
                   # (flutter dumps them when the frame error occurs); collect
                   # both directions around the [E] line.
                   pre = []
                   j = i - 1
-                  while j >= 0 and not ts.match(lines[j]) and len(pre) < 60:
+                  while j >= 0 and not ts.match(lines[j]) and len(pre) < 80:
                       pre.append(lines[j])
                       j -= 1
                   pre.reverse()
+                  picked = []
+                  m = 0
+                  while m < len(pre):
+                      if any(mk in pre[m] for mk in markers):
+                          picked.extend(pre[m:m + 3])
+                          m += 3
+                      else:
+                          m += 1
+                  if not picked:
+                      picked = pre[:6]
                   post = []
                   j = i + 1
-                  while j < len(lines) and not ts.match(lines[j]) and len(post) < 20:
+                  while j < len(lines) and not ts.match(lines[j]) and len(post) < 12:
                       post.append(lines[j])
                       j += 1
-                  parts = [lines[i]] + pre + post
+                  parts = [lines[i]] + picked + post
                   body = ' | '.join(x.strip() for x in parts if x.strip())
-                  print(f"::error::FAIL {k + 1}/{len(idxs)}: {body[:950]}")
+                  print(f"::error::FAIL {k + 1}/{len(idxs)}: {body[:1200]}")
           except Exception as e:  # diagnostics must never fail the job itself
               print(f"::warning::test-log digest failed: {e}")
           PY

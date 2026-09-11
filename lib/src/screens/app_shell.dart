@@ -48,39 +48,50 @@ class AppShell extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          NavigationRail(
-            selectedIndex: navigation.index,
-            onDestinationSelected: navigation.go,
-            labelType: NavigationRailLabelType.all,
-            leading: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Column(
-                children: [
-                  Image.asset(
-                    'assets/images/app_icon_master.png',
-                    width: 40,
-                    height: 40,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.link,
-                      size: 40,
+          // Tall rails (many destinations + leading block) must not overflow
+          // short windows: fill the full height when there is room, scroll
+          // when there is not.
+          LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: NavigationRail(
+                  selectedIndex: navigation.index,
+                  onDestinationSelected: navigation.go,
+                  labelType: NavigationRailLabelType.all,
+                  leading: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      children: [
+                        Image.asset(
+                          'assets/images/app_icon_master.png',
+                          width: 40,
+                          height: 40,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                            Icons.link,
+                            size: 40,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          context.l10n('appName'),
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    context.l10n('appName'),
-                    style: Theme.of(context).textTheme.labelSmall,
-                  ),
-                ],
+                  destinations: [
+                    for (final destination in destinations)
+                      NavigationRailDestination(
+                        icon: Icon(destination.$1),
+                        selectedIcon: Icon(destination.$2),
+                        label: Text(context.l10n(destination.$3)),
+                      ),
+                  ],
+                ),
               ),
             ),
-            destinations: [
-              for (final destination in destinations)
-                NavigationRailDestination(
-                  icon: Icon(destination.$1),
-                  selectedIcon: Icon(destination.$2),
-                  label: Text(context.l10n(destination.$3)),
-                ),
-            ],
           ),
           const VerticalDivider(thickness: 1, width: 1),
           Expanded(
