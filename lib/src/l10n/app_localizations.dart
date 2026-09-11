@@ -5,6 +5,7 @@
 /// only produce stable message keys.
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'strings.dart';
